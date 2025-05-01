@@ -1551,7 +1551,7 @@ Int commandsReadyDebugSpewage = 0;
  */
 Bool ConnectionManager::allCommandsReady(UnsignedInt frame, Bool justTesting /* = FALSE */) {
 	Bool retval = TRUE;
-	FrameDataReturnType frameRetVal;
+	FrameDataReturnType frameRetVal = FRAMEDATA_NOTREADY;
 //	retval = FALSE;  // ****for testing purposes only!!!!!!****
 	for (Int i = 0; (i < MAX_SLOTS) && retval; ++i) {
 		if ((m_frameData[i] != NULL) && (m_frameData[i]->getIsQuitting() == FALSE)) {
