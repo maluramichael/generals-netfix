@@ -6,7 +6,7 @@ Bug fixes for Command & Conquer Generals and Zero Hour, with a focus on multipla
 
 The code is imported from [TheSuperHackers/GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode) at commit `f5e823ba8b72237b1308ac1084ad484cfc1d48e6`. Their `.github` workflows are not included. Everything after the import commit is our own change.
 
-Compatibility with the retail game (Generals 1.08, Zero Hour 1.04) or with TheSuperHackers' VC6 builds is not a goal. Builds from this repository only play against builds from this repository.
+Compatibility with the retail game (Generals 1.08, Zero Hour 1.04) or with TheSuperHackers' VC6 builds is not a goal. For multiplayer, every player needs the same EXE.
 
 ## Target
 
@@ -28,7 +28,7 @@ The result is `build\xp\GeneralsMD\generalszh.exe`. Copy it into the Zero Hour f
 
 ## Status
 
-The XP build compiles and only imports functions that Windows XP SP3 provides. It has not been started on XP yet.
+The XP build compiles. `scripts\check-xp-imports.ps1 -XpDlls <dir>` compares its imports with the system DLLs of an XP SP3 install: all present. It has not been started on XP yet.
 
 ## License
 
