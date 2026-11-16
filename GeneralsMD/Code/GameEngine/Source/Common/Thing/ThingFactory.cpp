@@ -220,6 +220,8 @@ void ThingFactory::reset( void )
 		// t itself can be deleted if it is something created for this map only. Therefore, 
 		// we need to store what the next item is so that we don't orphan a bunch of templates.
 		ThingTemplate *nextT = t->friend_getNextTemplate();
+		DEBUG_ASSERTCRASH(!nextT || t->getTemplateID() == nextT->getTemplateID() + 1, ("Next template ID is unexpected"));
+
 		if (t == m_firstTemplate) {
 			possibleAdjustment = TRUE;
 		}
@@ -243,6 +245,10 @@ void ThingFactory::reset( void )
 
 		t = nextT;
 	}
+
+	// TheSuperHackers @bugfix Caball009 25/12/2025 Avoid mismatches by making m_nextTemplateID unique for a single match instead of unique since game launch.
+	DEBUG_ASSERTCRASH(m_firstTemplate && m_firstTemplate->getTemplateID() == m_templateHashMap.size(), ("Template ID is unexpected after deleting overrides"));
+	m_nextTemplateID = static_cast<UnsignedShort>(m_firstTemplate->getTemplateID() + 1);
 }  // end reset
 
 //-------------------------------------------------------------------------------------------------
