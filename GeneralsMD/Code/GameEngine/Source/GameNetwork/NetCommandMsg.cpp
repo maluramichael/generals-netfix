@@ -836,7 +836,7 @@ NetWrapperCommandMsg::NetWrapperCommandMsg() : NetCommandMsg() {
 
 NetWrapperCommandMsg::~NetWrapperCommandMsg() {
 	if (m_data != NULL) {
-		delete m_data;
+		delete[] m_data;
 		m_data = NULL;
 	}
 }
@@ -848,7 +848,7 @@ UnsignedByte * NetWrapperCommandMsg::getData() {
 void NetWrapperCommandMsg::setData(UnsignedByte *data, UnsignedInt dataLength) 
 {
 	if (m_data != NULL) {
-		delete m_data;
+		delete[] m_data;
 		m_data = NULL;
 	}
 
