@@ -966,9 +966,10 @@ GlobalData::GlobalData()
 
 	m_shellMapName.set("Maps\\ShellMap1\\ShellMap1.map");
 	m_shellMapOn =TRUE;
-	m_playIntro = TRUE;
-	m_playSizzle = TRUE;
-	m_afterIntro = FALSE;
+	// generals-netfix: skip the intro movies, same as -nologo
+	m_playIntro = FALSE;
+	m_playSizzle = FALSE;
+	m_afterIntro = TRUE;
 	m_allowExitOutOfMovies = FALSE;
 	m_loadScreenRender = FALSE;
   m_musicVolumeFactor = 0.5f;

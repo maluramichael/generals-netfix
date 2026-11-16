@@ -1465,6 +1465,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	GameWindow *labelVersion = TheWindowManager->winGetWindowFromId( NULL, versionID );
 	UnicodeString versionString;
 	versionString.format(TheGameText->fetch("Version:Format2").str(), (GetRegistryVersion() >> 16), (GetRegistryVersion() & 0xffff));
+	versionString.concat(L" patched by maluramichael"); // generals-netfix: marks our build
 	
 	if (TheVersion->showFullVersion())
 	{

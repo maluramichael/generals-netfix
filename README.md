@@ -1,3 +1,18 @@
+# generals-netfix
+
+Bug fixes for Command & Conquer Zero Hour, focused on multiplayer (desyncs, connection drops). Everything else stays as in the original game.
+
+- Base: the original source code from EA (`electronicarts/CnC_Generals_Zero_Hour`, commit `0a05454`), imported unchanged.
+- Build: the CMake build and the compile fixes for modern MSVC from [TheSuperHackers/GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode) (pull requests #365 and #426), taken over as single commits with their authors.
+- Our changes: the intro movies are skipped, and the options menu shows "patched by maluramichael" next to the version.
+
+Target is Windows XP SP3 and later. Build with `scripts\build-xp.ps1` (Visual Studio 2022 with the v141 toolset, "C++ Windows XP Support for VS 2017 (v141)" and MFC for v141). The result is `build\xp\GeneralsMD\generalszh.exe`, copy it into the Zero Hour folder. `scripts\check-xp-imports.ps1` checks the EXE against the system DLLs of XP SP3.
+
+For multiplayer, every player needs the same EXE.
+
+The original README from EA follows.
+
+---
 
 # Command & Conquer Generals (inc. Zero Hour) Source Code
 
