@@ -5094,6 +5094,10 @@ NetCommandList * NetPacket::getCommandList() {
 
 			if (msg == NULL) {
 				DEBUG_CRASH(("Didn't read a message from the packet. Things are about to go wrong."));
+				if (lastCommand != NULL) {
+					lastCommand->deleteInstance();
+					lastCommand = NULL;
+				}
 				continue;
 			}
 
@@ -5133,6 +5137,7 @@ NetCommandList * NetPacket::getCommandList() {
 			// Repeat the last command, doing some funky cool byte-saving stuff
 			if (lastCommand == NULL) {
 				DEBUG_CRASH(("Got a repeat command with no command to repeat."));
+				continue;
 			}
 			NetCommandMsg *msg = NULL;
 			if (commandType == NETCOMMANDTYPE_ACKSTAGE1) {
@@ -5192,6 +5197,10 @@ NetCommandList * NetPacket::getCommandList() {
 			DEBUG_CRASH(("Unrecognized packet entry, ignoring."));
 			DEBUG_LOG(("NetPacket::getCommandList - Unrecognized packet entry at index %d\n", i));
 			dumpPacketToLog();
+			if (lastCommand != NULL) {
+				lastCommand->deleteInstance();
+				lastCommand = NULL;
+			}
 			++i;
 		}
 	}
