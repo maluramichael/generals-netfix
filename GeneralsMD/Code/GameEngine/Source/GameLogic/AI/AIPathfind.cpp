@@ -8416,6 +8416,7 @@ struct TightenPathStruct
 	Int		radius;
 	Bool	center;
 	Bool	foundDest;
+	Coord3D orgDestPos;
 	Coord3D destPos;
 };
 
@@ -8427,7 +8428,8 @@ struct TightenPathStruct
 	if (d->layer != to->getLayer()) {
 		return 0; // abort.
 	}
-	Coord3D pos;
+	// TheSuperHackers @bugfix Caball009 27/02/2026 This was originally uninitialized.
+	Coord3D pos = d->orgDestPos;
 	if (!TheAI->pathfinder()->checkForAdjust(d->obj, *d->locomotorSet, true, to_x, to_y, to->getLayer(), d->radius, d->center, &pos, NULL)) 
 	{
 		return 0;	// bail early
@@ -8449,6 +8451,7 @@ void Pathfinder::tightenPath(Object *obj, const LocomotorSet& locomotorSet, Coor
 	info.obj = obj;
 	info.locomotorSet = &locomotorSet;
 	info.foundDest = false;
+	info.orgDestPos = *to;
 	iterateCellsAlongLine(*from, *to, info.layer, tightenPathCallback, &info);
 	if (info.foundDest) {
 		*from = info.destPos;
