@@ -1,25 +1,25 @@
 # generals-netfix
 
-Netcode and bug fixes for Command & Conquer Generals and Zero Hour.
+Bug fixes for Command & Conquer Generals and Zero Hour, with a focus on multiplayer (desyncs, connection drops). The game otherwise stays as it is: no gameplay changes, no new features.
 
-The game stays as it is. This project only fixes bugs, with a focus on multiplayer (desyncs, connection drops) and on a small patch mechanism to apply the fixes. No gameplay changes, no new features.
+## Source
 
-## Approach
+The code is imported from [TheSuperHackers/GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode) at commit `f5e823ba8b72237b1308ac1084ad484cfc1d48e6`. Their `.github` workflows are not included. Everything after the import commit is our own change.
 
-- Own repository, not a fork. It holds only the patches, not the game source.
-- Patches apply to a pinned commit of [TheSuperHackers/GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode). A script fetches that commit, applies the patches and builds.
-- Goal is compatibility with the retail versions (Generals 1.08, Zero Hour 1.04) and, where possible, old Windows versions via the VC6 build.
+Compatibility with the retail game (Generals 1.08, Zero Hour 1.04) or with TheSuperHackers' VC6 builds is not a goal. Builds from this repository only play against builds from this repository.
 
-## Layout
+## Target
 
-- `upstream.conf`: upstream repository and the pinned commit.
-- `patches/`: our changes as `git format-patch` files, applied in name order.
-- `scripts/prepare.sh`: clones upstream into `upstream/` (ignored by git), checks out the pinned commit on branch `netfix` and applies the patches with `git am`.
+Windows XP SP3 and later, built with an official Microsoft toolchain (Visual Studio 2022 with the v141 toolset and XP support). Windows 98, ME and 2000 are out of reach for that toolset.
 
-To add a patch: run `scripts/prepare.sh`, commit the change inside `upstream/`, then `git -C upstream format-patch -1 -o ../patches`.
+## Running the game
+
+You need your own copy of the original game. This project does not include game data. Zero Hour also needs the base game Generals installed: it loads the Generals `.big` files from the path in the registry key `HKLM\SOFTWARE\Electronic Arts\EA Games\Generals\InstallPath` (on 64-bit Windows under `WOW6432Node`). Without it, textures show up pink and the game crashes after a while.
 
 ## Status
 
-Early setup. No patches yet.
+Code imported. XP build in progress.
 
-You need your own copy of the original game. This project does not include game data. Zero Hour also needs the base game Generals installed: it loads the Generals `.big` files from the path in the registry key `HKLM\SOFTWARE\Electronic Arts\EA Games\Generals\InstallPath` (on 64-bit Windows under `WOW6432Node`). Without it, textures show up pink and the game crashes after a while.
+## License
+
+GPL-3.0 with additional terms from EA, see [LICENSE.md](LICENSE.md). EA has not endorsed and does not support this project. All trademarks are the property of their respective owners.
