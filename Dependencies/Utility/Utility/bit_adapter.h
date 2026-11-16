@@ -30,7 +30,16 @@
 
 #pragma once
 
+// The fallback also serves compilers without <bit>, such as MSVC v141 (the toolset for Windows XP).
 #if defined(_MSC_VER) && _MSC_VER < 1300
+	#define BIT_ADAPTER_FALLBACK
+#elif defined(__has_include)
+	#if !__has_include(<bit>)
+		#define BIT_ADAPTER_FALLBACK
+	#endif
+#endif
+
+#ifdef BIT_ADAPTER_FALLBACK
 
 #include <string.h>
 

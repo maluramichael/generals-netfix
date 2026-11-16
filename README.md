@@ -16,9 +16,19 @@ Windows XP SP3 and later, built with an official Microsoft toolchain (Visual Stu
 
 You need your own copy of the original game. This project does not include game data. Zero Hour also needs the base game Generals installed: it loads the Generals `.big` files from the path in the registry key `HKLM\SOFTWARE\Electronic Arts\EA Games\Generals\InstallPath` (on 64-bit Windows under `WOW6432Node`). Without it, textures show up pink and the game crashes after a while.
 
+## Building for Windows XP
+
+Needs Visual Studio 2022 with the v141 toolset (14.16), "C++ Windows XP Support for VS 2017 (v141)", MFC for v141, CMake and Ninja. Then, in PowerShell:
+
+```
+scripts\build-xp.ps1
+```
+
+The result is `build\xp\GeneralsMD\generalszh.exe`. Copy it into the Zero Hour folder.
+
 ## Status
 
-Code imported. XP build in progress.
+The XP build compiles and only imports functions that Windows XP SP3 provides. It has not been started on XP yet.
 
 ## License
 

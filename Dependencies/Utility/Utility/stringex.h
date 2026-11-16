@@ -337,7 +337,14 @@ template<typename T> inline bool endsWithNoCase(const T *str, const T *suffix)
 #if defined(_MSC_VER) && _MSC_VER < 1300
   #include "stringex_memcchr_x86asm.inl"
 #else
-  #if defined(__SSE2__) || defined(_M_X64) || (defined(_MSC_VER) && defined(_M_IX86))
+  // The SSE2 version needs std::countr_zero. Compilers without <bit>, such as MSVC v141 (the toolset for Windows XP),
+  // take the portable version.
+  #if defined(__has_include)
+    #if __has_include(<bit>)
+      #define STRINGEX_HAS_BIT
+    #endif
+  #endif
+  #if defined(STRINGEX_HAS_BIT) && (defined(__SSE2__) || defined(_M_X64) || (defined(_MSC_VER) && defined(_M_IX86)))
     #include <bit>
     #include <emmintrin.h>
     #include "stringex_memcchr_sse2.inl"
