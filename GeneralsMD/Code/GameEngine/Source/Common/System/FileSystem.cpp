@@ -197,8 +197,8 @@ Bool FileSystem::doesFileExist(const Char *filename) const
 {
 	USE_PERF_TIMER(FileSystem)
 
-  unsigned key=TheNameKeyGenerator->nameToLowercaseKey(filename);
-  std::map<unsigned,bool>::iterator i=m_fileExist.find(key);
+  AsciiString key(filename);
+  FileExistMap::iterator i=m_fileExist.find(key);
   if (i!=m_fileExist.end())
     return i->second;
 
