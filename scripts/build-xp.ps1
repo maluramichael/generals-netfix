@@ -3,7 +3,10 @@
 # Windows SDK 7.1A headers and libs, _USING_V110_SDK71_, minimum OS 5.01.
 # The UCRT comes from Windows SDK 10.0.10240, the oldest UCRT release.
 # Needs VS 2022 with the components "MSVC v141 x86/x64 (14.16)", "C++ Windows XP Support for VS 2017 (v141)" and MFC for v141.
+# -Config RelWithDebInfo builds into build/xp-relwithdebinfo with a PDB for crash analysis.
+param([string]$Config = "Release")
 $ErrorActionPreference = "Stop"
+$dir = if ($Config -eq "Release") { "build/xp" } else { "build/xp-$($Config.ToLower())" }
 $root = Split-Path -Parent $PSScriptRoot
 $vs = "C:\Program Files\Microsoft Visual Studio\2022\Community"
 
@@ -26,7 +29,7 @@ $env:RCFLAGS = "/D_USING_V110_SDK71_"
 
 Set-Location $root
 cl 2>&1 | Select-Object -First 1
-cmake -S . -B build/xp -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DGENZH_BUILD_GENERALS=OFF "-DCMAKE_EXE_LINKER_FLAGS=/SUBSYSTEM:WINDOWS,5.01"
+cmake -S . -B $dir -G Ninja "-DCMAKE_BUILD_TYPE=$Config" -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DGENZH_BUILD_GENERALS=OFF "-DCMAKE_EXE_LINKER_FLAGS=/SUBSYSTEM:WINDOWS,5.01"
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
-cmake --build build/xp --target z_generals -- -k 0
+cmake --build $dir --target z_generals -- -k 0
 exit $LASTEXITCODE
