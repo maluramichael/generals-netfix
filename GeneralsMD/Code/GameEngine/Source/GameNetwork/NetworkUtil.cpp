@@ -108,9 +108,8 @@ UnsignedInt ResolveIP(AsciiString host)
  * Returns the next network command ID.
  */
 UnsignedShort GenerateNextCommandID() {
-	static UnsignedShort commandID = 64000;
-	++commandID;
-	return commandID;
+	static UnsignedShort commandID = 0;
+	return commandID++;
 }
 
 /**
