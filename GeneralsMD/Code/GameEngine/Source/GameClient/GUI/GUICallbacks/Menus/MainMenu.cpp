@@ -41,6 +41,7 @@
 #include "Common/UserPreferences.h"
 #include "Common/Version.h"
 #include "Common/GameLOD.h"
+#include "Common/Registry.h"
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/ExtendedMessageBox.h"
 #include "GameClient/MessageBox.h"
@@ -447,6 +448,55 @@ GameWindow *win = NULL;
 		win->winHide(TRUE);
 
 }
+
+// generals-netfix: one line at the bottom of the main menu that marks our build.
+// The build date is the link time stamp of the EXE, so it is right after every build.
+static void initNetfixLabel( void )
+{
+	NameKeyType labelID = TheNameKeyGenerator->nameToKey( AsciiString("MainMenu.wnd:NetfixLabel") );
+	if( TheWindowManager->winGetWindowFromId( parentMainMenu, labelID ) )
+		return;
+
+	const char *base = (const char *)GetModuleHandle( NULL );
+	const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)(base + ((const IMAGE_DOS_HEADER *)base)->e_lfanew);
+	time_t linkTime = (time_t)nt->FileHeader.TimeDateStamp;
+	char date[16] = "";
+	strftime( date, sizeof(date), "%Y-%m-%d", gmtime( &linkTime ) );
+	UnicodeString dateText;
+	dateText.translate( AsciiString(date) );
+
+	UnicodeString versionText;
+	versionText.format( TheGameText->fetch("Version:Format2").str(), (GetRegistryVersion() >> 16), (GetRegistryVersion() & 0xffff) );
+
+	UnicodeString text;
+	text.format( L"patched by maluramichael | %s | Build %s | github.com/maluramichael/generals-netfix", versionText.str(), dateText.str() );
+
+	WinInstanceData instData;
+	instData.init();
+	BitSet( instData.m_style, GWS_STATIC_TEXT );
+	TextData textData;
+	memset( &textData, 0, sizeof(textData) );
+
+	// Same look as OptionsMenu.wnd:LabelVersion: header template LabelSmall, white text with black border,
+	// no background. Position in the 800x600 creation resolution of the menus, scaled to the screen.
+	GameFont *font = TheHeaderTemplateManager->getFontFromTemplate( "LabelSmall" );
+	const Real scaleX = TheDisplay->getWidth() / 800.0f;
+	const Real scaleY = TheDisplay->getHeight() / 600.0f;
+	GameWindow *label = TheWindowManager->gogoGadgetStaticText( parentMainMenu, WIN_STATUS_ENABLED,
+		REAL_TO_INT( 8 * scaleX ), REAL_TO_INT( 580 * scaleY ), REAL_TO_INT( 784 * scaleX ), REAL_TO_INT( 18 * scaleY ),
+		&instData, &textData, font, FALSE );
+	if( label )
+	{
+		label->winSetWindowId( labelID );
+		if( font )
+			label->winSetFont( font );
+		label->winSetEnabledColor( 0, GameMakeColor( 0, 0, 0, 0 ) );
+		label->winSetEnabledBorderColor( 0, GameMakeColor( 0, 0, 0, 0 ) );
+		label->winSetEnabledTextColors( GameMakeColor( 255, 255, 255, 240 ), GameMakeColor( 0, 0, 0, 255 ) );
+		GadgetStaticTextSetText( label, text );
+	}
+}
+
 //-------------------------------------------------------------------------------------------------
 /** Initialize the main menu */
 //-------------------------------------------------------------------------------------------------
@@ -553,6 +603,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	initialHide();
 	
 	showSelectiveButtons(SHOW_NONE);
+	initNetfixLabel();
 	// Set up the version number
 #if defined _DEBUG || defined _INTERNAL || defined _PROFILE
 	WinInstanceData instData;
