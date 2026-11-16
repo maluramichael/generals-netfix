@@ -167,9 +167,6 @@ public:
 typedef std::vector<WeaponTemplateSet> WeaponTemplateSetVector;
 
 //-------------------------------------------------------------------------------------------------
-typedef SparseMatchFinder<WeaponTemplateSet, WeaponSetFlags> WeaponTemplateSetFinder;
-
-//-------------------------------------------------------------------------------------------------
 enum WeaponChoiceCriteria
 {
 	PREFER_MOST_DAMAGE,		///< choose the weapon that will do the most damage
