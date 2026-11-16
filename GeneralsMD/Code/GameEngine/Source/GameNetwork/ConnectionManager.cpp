@@ -302,6 +302,7 @@ Int ConnectionManager::getPingsRecieved()
 
 Bool ConnectionManager::isPlayerConnected( Int playerID )
 {
+	DEBUG_ASSERTCRASH( playerID < MAX_SLOTS, ("ConnectionManager::isPlayerConnected - %d is an invalid player number", playerID) );
 	return ( playerID == m_localSlot || (m_connections[playerID] && !m_connections[playerID]->isQuitting()) );
 }
 
@@ -430,6 +431,10 @@ Bool ConnectionManager::processNetCommand(NetCommandRef *ref) {
 
 		processAck(msg);
 		return FALSE;
+	}
+
+	if (msg->getPlayerID() >= MAX_SLOTS) {
+		return TRUE;
 	}
 
 	if ((m_connections[msg->getPlayerID()] == NULL) && (msg->getPlayerID() != m_localSlot)) {
@@ -628,7 +633,10 @@ void ConnectionManager::processDisconnectChat(NetDisconnectChatCommandMsg *msg)
 {
 	UnicodeString unitext;
 	UnicodeString name;
-	UnsignedByte playerID = msg->getPlayerID();
+	const UnsignedInt playerID = msg->getPlayerID();
+	if (playerID >= MAX_SLOTS) {
+		return;
+	}
 	if (playerID == m_localSlot) {
 		name = m_localUser->GetName();
 	} else if (isPlayerConnected(playerID)) {
@@ -643,7 +651,10 @@ void ConnectionManager::processChat(NetChatCommandMsg *msg)
 {
 	UnicodeString unitext;
 	UnicodeString name;
-	UnsignedByte playerID = msg->getPlayerID();
+	const UnsignedInt playerID = msg->getPlayerID();
+	if (playerID >= MAX_SLOTS) {
+		return;
+	}
 	//DEBUG_LOG(("processChat(): playerID = %d\n", playerID));
 	if (playerID == m_localSlot) {
 		name = m_localUser->GetName();
@@ -796,9 +807,14 @@ void ConnectionManager::processFileProgress(NetFileProgressCommandMsg *msg)
 {
 	DEBUG_LOG(("ConnectionManager::processFileProgress() - command %d is at %d%%\n",
 		msg->getFileID(), msg->getProgress()));
-	Int oldProgress = s_fileProgressMap[msg->getPlayerID()][msg->getFileID()];
 
-	s_fileProgressMap[msg->getPlayerID()][msg->getFileID()] = max(oldProgress, msg->getProgress());
+	const UnsignedInt playerID = msg->getPlayerID();
+	if (playerID >= MAX_SLOTS) {
+		return;
+	}
+	const UnsignedShort fileID = msg->getFileID();
+	const Int oldProgress = s_fileProgressMap[playerID][fileID];
+	s_fileProgressMap[playerID][fileID] = max(oldProgress, msg->getProgress());
 }
 
 void ConnectionManager::processProgress( NetProgressCommandMsg *msg )
@@ -1123,11 +1139,13 @@ void ConnectionManager::sendRemoteCommand(NetCommandRef *msg) {
 	DEBUG_LOG(("ConnectionManager::sendRemoteCommand - sending net command %d of type %s from player %d, relay is 0x%x\n",
 		msg->getCommand()->getID(), GetAsciiNetCommandType(msg->getCommand()->getNetCommandType()).str(), msg->getCommand()->getPlayerID(), msg->getRelay()));
 
-	UnsignedByte relay = msg->getRelay();
-	if ((relay & (1 << m_localSlot)) && (m_frameData[msg->getCommand()->getPlayerID()] != NULL)) {
+	const UnsignedByte relay = msg->getRelay();
+	const UnsignedInt playerID = msg->getCommand()->getPlayerID();
+	FrameDataManager *frameDataMgr = playerID < MAX_SLOTS ? m_frameData[playerID] : NULL;
+	if ((relay & (1 << m_localSlot)) && (frameDataMgr != NULL)) {
 		if (IsCommandSynchronized(msg->getCommand()->getNetCommandType())) {
 			DEBUG_LOG(("ConnectionManager::sendRemoteCommand - adding net command of type %s to player %d for frame %d\n", GetAsciiNetCommandType(msg->getCommand()->getNetCommandType()).str(), msg->getCommand()->getPlayerID(), msg->getCommand()->getExecutionFrame()));
-			m_frameData[msg->getCommand()->getPlayerID()]->addNetCommandMsg(msg->getCommand());
+			frameDataMgr->addNetCommandMsg(msg->getCommand());
 		}
 	}
 
