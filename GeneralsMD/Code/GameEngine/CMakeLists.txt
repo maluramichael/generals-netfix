@@ -1177,3 +1177,18 @@ target_compile_definitions(z_gameengine PRIVATE
 )
 
 target_precompile_headers(z_gameengine PRIVATE Include/Precompiled/PreRTS.h)
+
+# generals-netfix: git commit of the build for the line in the main menu. Only MainMenu.cpp gets the
+# define, so a new commit recompiles just that file. "-dirty" marks uncommitted changes.
+execute_process(COMMAND git describe --always --dirty --abbrev=7
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE NETFIX_GIT_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+if(NOT NETFIX_GIT_VERSION)
+    set(NETFIX_GIT_VERSION "unknown")
+endif()
+set_source_files_properties(Source/GameClient/GUI/GUICallbacks/Menus/MainMenu.cpp PROPERTIES
+    COMPILE_DEFINITIONS "NETFIX_GIT_VERSION=\"${NETFIX_GIT_VERSION}\""
+)

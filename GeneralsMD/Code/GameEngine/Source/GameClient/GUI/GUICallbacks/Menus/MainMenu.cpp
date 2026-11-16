@@ -464,12 +464,17 @@ static void initNetfixLabel( void )
 	strftime( date, sizeof(date), "%Y-%m-%d", gmtime( &linkTime ) );
 	UnicodeString dateText;
 	dateText.translate( AsciiString(date) );
+#ifndef NETFIX_GIT_VERSION
+#define NETFIX_GIT_VERSION "unknown"
+#endif
+	UnicodeString commitText;
+	commitText.translate( AsciiString(NETFIX_GIT_VERSION) );
 
 	UnicodeString versionText;
 	versionText.format( TheGameText->fetch("Version:Format2").str(), (GetRegistryVersion() >> 16), (GetRegistryVersion() & 0xffff) );
 
 	UnicodeString text;
-	text.format( L"patched by maluramichael | %s | Build %s | github.com/maluramichael/generals-netfix", versionText.str(), dateText.str() );
+	text.format( L"patched by maluramichael | %s | Build %s %s | github.com/maluramichael/generals-netfix", versionText.str(), dateText.str(), commitText.str() );
 
 	WinInstanceData instData;
 	instData.init();
