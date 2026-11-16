@@ -106,9 +106,27 @@ void NetCommandWrapperListNode::copyChunkData(NetWrapperCommandMsg *msg) {
 		return;
 	}
 
-	m_chunksPresent[msg->getChunkNumber()] = TRUE;
 	UnsignedInt offset = msg->getDataOffset();
-	memcpy(m_data + offset, msg->getData(), msg->getDataLength());
+	UnsignedInt dataLength = msg->getDataLength();
+
+	// TheSuperHackers @security Mauller 04/12/2025 Prevent out of bounds memory access
+	if (offset >= m_dataLength) {
+		DEBUG_CRASH(("Data chunk offset %u exceeds the total data length %u", offset, m_dataLength));
+		return;
+	}
+
+	if (dataLength > MAX_PACKET_SIZE) {
+		DEBUG_CRASH(("Data Chunk size %u greater than max packet size %u", dataLength, MAX_PACKET_SIZE));
+		return;
+	}
+
+	if (offset + dataLength > m_dataLength) {
+		DEBUG_CRASH(("Data chunk exceeds data array size"));
+		return;
+	}
+
+	m_chunksPresent[msg->getChunkNumber()] = TRUE;
+	memcpy(m_data + offset, msg->getData(), dataLength);
 	++m_numChunksPresent;
 }
 
