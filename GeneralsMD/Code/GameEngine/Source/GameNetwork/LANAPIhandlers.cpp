@@ -58,17 +58,20 @@ void LANAPI::handleRequestLocations( LANMessage *msg, UnsignedInt senderIP )
 		{
 			if (m_currentGame->getIP(0) == m_localIP)
 			{
-				LANMessage reply;
-				fillInLANMessage( &reply );
-				reply.LANMessageType = LANMessage::MSG_GAME_ANNOUNCE;
 				AsciiString gameOpts = GenerateGameOptionsString();
-				strncpy(reply.GameInfo.options,gameOpts.str(),m_lanMaxOptionsLength);
-				wcsncpy(reply.GameInfo.gameName, m_currentGame->getName().str(), g_lanGameNameLength);
-				reply.GameInfo.gameName[g_lanGameNameLength] = 0;
-				reply.GameInfo.inProgress = m_currentGame->isGameInProgress();
-				reply.GameInfo.isDirectConnect = m_currentGame->getIsDirectConnect();
+				if (!gameOpts.isEmpty())
+				{
+					LANMessage reply;
+					fillInLANMessage( &reply );
+					reply.LANMessageType = LANMessage::MSG_GAME_ANNOUNCE;
+					strncpy(reply.GameInfo.options,gameOpts.str(),m_lanMaxOptionsLength);
+					wcsncpy(reply.GameInfo.gameName, m_currentGame->getName().str(), g_lanGameNameLength);
+					reply.GameInfo.gameName[g_lanGameNameLength] = 0;
+					reply.GameInfo.inProgress = m_currentGame->isGameInProgress();
+					reply.GameInfo.isDirectConnect = m_currentGame->getIsDirectConnect();
 
-				sendMessage(&reply);
+					sendMessage(&reply);
+				}
 			}
 			else
 			{
@@ -190,11 +193,16 @@ void LANAPI::handleRequestGameInfo( LANMessage *msg, UnsignedInt senderIP )
 	{
 		if (m_currentGame->getIP(0) == m_localIP || (m_currentGame->isGameInProgress() && TheNetwork && TheNetwork->isPacketRouter())) // if we're in game we should reply if we're the packet router
 		{
+			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
+			if (gameOpts.isEmpty())
+			{
+				return;
+			}
+
 			LANMessage reply;
 			fillInLANMessage( &reply );
 			reply.LANMessageType = LANMessage::MSG_GAME_ANNOUNCE;
 			
-			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
 			strncpy(reply.GameInfo.options,gameOpts.str(),m_lanMaxOptionsLength);
 			wcsncpy(reply.GameInfo.gameName, m_currentGame->getName().str(), g_lanGameNameLength);
 			reply.GameInfo.gameName[g_lanGameNameLength] = 0;
