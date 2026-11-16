@@ -1,0 +1,6 @@
+upstream/
+build/
+*.pdb
+*.7z
+*.zip
+.local/
