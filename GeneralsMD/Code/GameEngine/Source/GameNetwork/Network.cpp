@@ -188,6 +188,7 @@ protected:
 	Bool AllCommandsReady(UnsignedInt frame);											///< Do we have all the commands for the given frame?
 	void RelayCommandsToCommandList(UnsignedInt frame);						///< Put the commands for the given frame onto TheCommandList.
 	Bool isTransferCommand(GameMessage *msg);											///< Is this a command that needs to be transfered to the other clients?
+	static Bool isMessageTypeWithinNetworkRange(GameMessage::Type type);
 	Bool processCommand(GameMessage *msg);												///< Whatever needs to be done as a result of this command, do it now.
 	void processFrameSynchronizedNetCommand(NetCommandRef *msg);	///< If there is a network command that needs to be executed at the same frame number on all clients, it happens here.
 	void processRunAheadCommand(NetRunAheadCommandMsg *msg);			///< Do what needs to be done when we get a new run ahead command.
@@ -462,6 +463,10 @@ Bool Network::isTransferCommand(GameMessage *msg) {
 	return FALSE;
 }
 
+Bool Network::isMessageTypeWithinNetworkRange(GameMessage::Type type) {
+	return type > GameMessage::MSG_BEGIN_NETWORK_MESSAGES && type < GameMessage::MSG_END_NETWORK_MESSAGES;
+}
+
 /**
  * Take commands from TheCommandList and give them to the connection manager for transport.
  */
@@ -592,8 +597,15 @@ void Network::RelayCommandsToCommandList(UnsignedInt frame) {
 	while (msg != NULL) {
 		NetCommandType cmdType = msg->getCommand()->getNetCommandType();
 		if (cmdType == NETCOMMANDTYPE_GAMECOMMAND) {
-			//DEBUG_LOG(("Network::RelayCommandsToCommandList - appending command %d of type %s to command list on frame %d\n", msg->getCommand()->getID(), ((NetGameCommandMsg *)msg->getCommand())->constructGameMessage()->getCommandAsAsciiString().str(), TheGameLogic->getFrame()));
-			TheCommandList->appendMessage(((NetGameCommandMsg *)msg->getCommand())->constructGameMessage());
+			NetGameCommandMsg *gmsg = (NetGameCommandMsg *)msg->getCommand();
+			// TheSuperHackers @fix stephanmeesters 14/05/2026 Verify accepted type of incoming game messages
+			if (isMessageTypeWithinNetworkRange(gmsg->getGameMessageType())) {
+				//DEBUG_LOG(("Network::RelayCommandsToCommandList - appending command %d of type %s to command list on frame %d\n", msg->getCommand()->getID(), ((NetGameCommandMsg *)msg->getCommand())->constructGameMessage()->getCommandAsAsciiString().str(), TheGameLogic->getFrame()));
+				TheCommandList->appendMessage(gmsg->constructGameMessage());
+			} else {
+				DEBUG_LOG(("Network::RelayCommandsToCommandList - rejecting game message from player %d of type %s, which is not a network type.\n",
+					gmsg->getPlayerID(), GameMessage::getCommandTypeAsAsciiString(gmsg->getGameMessageType()).str()));
+			}
 		} else {
 			processFrameSynchronizedNetCommand(msg);
 		}

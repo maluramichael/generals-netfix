@@ -216,6 +216,10 @@ void NetGameCommandMsg::setGameMessageType(GameMessage::Type type) {
 	m_type = type;
 }
 
+GameMessage::Type NetGameCommandMsg::getGameMessageType() const {
+	return m_type;
+}
+
 AsciiString NetGameCommandMsg::getContentsAsAsciiString(void)
 {
 	AsciiString ret;

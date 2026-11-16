@@ -85,6 +85,7 @@ public:
 	GameMessage *constructGameMessage();
 	void addArgument(const GameMessageArgumentDataType type, GameMessageArgumentType arg);
 	void setGameMessageType(GameMessage::Type type);
+	GameMessage::Type getGameMessageType() const;
 
 	// For debugging purposes
 	virtual AsciiString getContentsAsAsciiString(void);
