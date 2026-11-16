@@ -234,6 +234,35 @@ DEBUG_LOG(( "%d: GetGameLogicRandomValue = %d (%d - %d), %s line %d\n",
 }
 
 //
+// TheSuperHackers @info This function does not change the seed values.
+// Consecutive calls always return the same value for the same combination of min / max values, assuming the seed values haven't changed in between.
+// The intended use case for this function are randomized values that are desirable to be synchronized across clients,
+// but should not result in a mismatch if they aren't synchronized; e.g. for scripted audio events.
+//
+Int GetGameLogicRandomValueUnchanged( int lo, int hi, const char *file, int line )
+{
+	UnsignedInt delta = hi - lo + 1;
+	Int rval;
+
+	if (delta == 0)
+		return hi;
+
+	UnsignedInt seed[6];
+	memcpy(&seed[0], &theGameLogicSeed[0], sizeof(seed));
+
+	rval = ((Int)(randomValue(seed) % delta)) + lo;
+
+/**/
+#ifdef DEBUG_RANDOM_LOGIC
+DEBUG_LOG(( "%d: GetGameLogicRandomValueUnchanged = %d (%d - %d), %s line %d\n",
+				 TheGameLogic->getFrame(), rval, lo, hi, file, line ));
+#endif
+/**/
+
+	return rval;
+}
+
+//
 // Integer random value
 //
 Int GetGameClientRandomValue( int lo, int hi, const char *file, int line )
