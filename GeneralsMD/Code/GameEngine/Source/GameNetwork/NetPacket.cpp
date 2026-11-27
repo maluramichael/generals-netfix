@@ -231,7 +231,7 @@ NetPacketList NetPacket::ConstructBigCommandPacketList(NetCommandRef *ref) {
 	wrapperMsg->detach();
 	wrapperMsg = NULL;
 
-	delete bigPacketData;
+	delete[] bigPacketData;
 	bigPacketData = NULL;
 
 	return packetList;
