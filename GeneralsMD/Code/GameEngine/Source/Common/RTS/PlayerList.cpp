@@ -58,6 +58,7 @@
 #include "GameLogic/Object.h"
 #endif
 #include "GameLogic/SidesList.h"
+#include "GameNetwork/GameInfo.h"
 #include "GameNetwork/NetworkDefs.h"
 
 #ifdef _INTERNAL
@@ -233,6 +234,10 @@ void PlayerList::newGame()
 		p->setDefaultTeam();
 	}
 
+	if (TheGameInfo)
+	{
+		assignSlotIndices(*TheGameInfo);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -243,6 +248,8 @@ void PlayerList::init()
 
 	for (int i = 1; i < MAX_PLAYER_COUNT; i++)
 		m_players[i]->init(NULL);
+
+	std::fill(m_slotIndices, m_slotIndices + MAX_PLAYER_COUNT, -1);
 
 	// call setLocalPlayer so that becomingLocalPlayer() gets called appropriately
 	setLocalPlayer(m_players[0]);
@@ -491,3 +498,42 @@ void PlayerList::loadPostProcess( void )
 
 }  // end postProcessLoad
 
+//-----------------------------------------------------------------------------
+void PlayerList::setSlotIndex(Int playerIndex, Int slotIndex)
+{
+	if (playerIndex >= 0 && playerIndex < MAX_PLAYER_COUNT)
+	{
+		m_slotIndices[playerIndex] = slotIndex;
+	}
+}
+
+//-----------------------------------------------------------------------------
+Int PlayerList::getSlotIndex(Int playerIndex) const
+{
+	if (playerIndex >= 0 && playerIndex < MAX_PLAYER_COUNT)
+	{
+		return m_slotIndices[playerIndex];
+	}
+
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+void PlayerList::assignSlotIndices(const GameInfo& gameInfo)
+{
+	AsciiString playerName;
+
+	for (Int i = 0; i < MAX_SLOTS; ++i)
+	{
+		const GameSlot* slot = gameInfo.getConstSlot(i);
+		if (!slot || !slot->isOccupied())
+			continue;
+
+		playerName.format("player%d", i);
+
+		if (Player* player = findPlayerWithNameKey(TheNameKeyGenerator->nameToKey(playerName)))
+		{
+			setSlotIndex(player->getPlayerIndex(), i);
+		}
+	}
+}

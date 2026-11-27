@@ -55,6 +55,7 @@
 class DataChunkInput;
 struct DataChunkInfo;
 class DataChunkOutput;
+class GameInfo;
 class Player;
 class Team;
 class TeamFactory;
@@ -153,6 +154,8 @@ public:
 	*/
 	PlayerMaskType getPlayersWithRelationship( Int srcPlayerIndex, UnsignedInt allowedRelationships );
 
+	Int getSlotIndex(Int playerIndex) const;
+
 protected:
 
 	// snapshot methods
@@ -161,10 +164,13 @@ protected:
 	virtual void loadPostProcess( void );
 
 private:
+	void assignSlotIndices(const GameInfo& gameInfo);
+	void setSlotIndex(Int playerIndex, Int slotIndex);
 
 	Player				*m_local;
 	Int						m_playerCount;
 	Player				*m_players[MAX_PLAYER_COUNT];
+	Int						m_slotIndices[MAX_PLAYER_COUNT];
 
 };
 
