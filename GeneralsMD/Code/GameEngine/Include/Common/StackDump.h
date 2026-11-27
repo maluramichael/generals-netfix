@@ -51,6 +51,10 @@ void GetFunctionDetails(void *pointer, char*name, char*filename, unsigned int* l
 // Dumps out the exception info and stack trace.
 void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info );
 
+// generals-netfix: writes CrashDump_<date>_<time>.dmp into the user data folder, once per run.
+// e_info may be NULL, then the dump shows the calling thread.
+void WriteCrashDump( EXCEPTION_POINTERS* e_info );
+
 #else
 
 __inline void StackDump(void (*callback)(const char*)) {};
@@ -65,6 +69,8 @@ __inline void GetFunctionDetails(void *pointer, char*name, char*filename, unsign
 
 // Dumps out the exception info and stack trace.
 __inline void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info ) {};
+
+__inline void WriteCrashDump( EXCEPTION_POINTERS* e_info ) {}
 
 #endif
 

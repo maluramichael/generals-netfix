@@ -476,6 +476,8 @@ void WriteStackLine(void*address, void (*callback)(const char*))
 //*****************************************************************************
 void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 {
+	WriteCrashDump(e_info);
+
    DEBUG_LOG(( "\n********** EXCEPTION DUMP ****************\n" ));
 	/*
 	** List of possible exceptions
@@ -629,6 +631,78 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
   DEBUG_LOG(( "********** END EXCEPTION DUMP ****************\n\n" ));
 }																									 
 
+
+//*****************************************************************************
+// generals-netfix: minidump on crash, idea from TheSuperHackers #1594 (MiniDumper).
+// Small dump only (stacks, referenced memory), a few MB. The dump is written from a
+// helper thread, as recommended for MiniDumpWriteDump on the own process.
+// MiniDumpWriteDump is loaded at runtime from the system dbghelp.dll: the game folder
+// ships a dbghelp.dll from 2003 without it, a static import would stop the game from starting.
+// ponytail: no rotation of old dumps, add one if crashes ever pile up.
+//*****************************************************************************
+typedef BOOL (WINAPI *MiniDumpWriteDumpFunc)(HANDLE, DWORD, HANDLE, MINIDUMP_TYPE,
+	PMINIDUMP_EXCEPTION_INFORMATION, PMINIDUMP_USER_STREAM_INFORMATION, PMINIDUMP_CALLBACK_INFORMATION);
+
+struct CrashDumpJob
+{
+	MiniDumpWriteDumpFunc writeDump;
+	HANDLE file;
+	MINIDUMP_EXCEPTION_INFORMATION info;
+	BOOL hasInfo;
+};
+
+static DWORD WINAPI CrashDumpThread( LPVOID param )
+{
+	CrashDumpJob *job = (CrashDumpJob *)param;
+	const MINIDUMP_TYPE type = (MINIDUMP_TYPE)(MiniDumpNormal | MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory);
+	job->writeDump(GetCurrentProcess(), GetCurrentProcessId(), job->file, type,
+		job->hasInfo ? &job->info : NULL, NULL, NULL);
+	return 0;
+}
+
+void WriteCrashDump( EXCEPTION_POINTERS* e_info )
+{
+	static BOOL written = FALSE;
+	if (written || TheGlobalData == NULL)
+		return;
+	written = TRUE;
+
+	char path[_MAX_PATH];
+	UINT len = GetSystemDirectoryA(path, sizeof(path));
+	if (len == 0 || len + 14 > sizeof(path))
+		return;
+	strcat(path, "\\dbghelp.dll");
+	HMODULE dbghelp = LoadLibraryA(path);
+	MiniDumpWriteDumpFunc writeDump = dbghelp ? (MiniDumpWriteDumpFunc)GetProcAddress(dbghelp, "MiniDumpWriteDump") : NULL;
+	if (writeDump == NULL)
+		return;
+
+	SYSTEMTIME t;
+	GetLocalTime(&t);
+	_snprintf(path, sizeof(path), "%sCrashDump_%04d%02d%02d_%02d%02d%02d.dmp", TheGlobalData->getPath_UserData().str(),
+		t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+	path[sizeof(path) - 1] = 0;
+
+	HANDLE file = CreateFileA(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (file == INVALID_HANDLE_VALUE)
+		return;
+
+	CrashDumpJob job;
+	job.writeDump = writeDump;
+	job.file = file;
+	job.info.ThreadId = GetCurrentThreadId();
+	job.info.ExceptionPointers = e_info;
+	job.info.ClientPointers = FALSE;
+	job.hasInfo = (e_info != NULL);
+
+	HANDLE thread = CreateThread(NULL, 0, CrashDumpThread, &job, 0, NULL);
+	if (thread)
+	{
+		WaitForSingleObject(thread, 60000);
+		CloseHandle(thread);
+	}
+	CloseHandle(file);
+}
 
 #pragma pack(pop)
 
