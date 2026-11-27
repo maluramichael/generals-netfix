@@ -139,10 +139,13 @@ void DisconnectManager::update(ConnectionManager *conMgr) {
 					//use next ping server
 					static int serverIndex = 0;
 					serverIndex++;
-					if( serverIndex >= TheGameSpyConfig->getPingServers().size() )
+
+					AsciiStringList pingServers = TheGameSpyConfig->getPingServers();
+
+					if( serverIndex >= pingServers.size() )
 						serverIndex = 0;  //wrap back to first ping server
 
-					std::list<AsciiString>::iterator it = TheGameSpyConfig->getPingServers().begin();
+					std::list<AsciiString>::iterator it = pingServers.begin();
 					for( int i = 0;  i < serverIndex;  i++ )
 						it++;
 
