@@ -36,6 +36,7 @@ static const Int WOL_NAME_LEN = 64;
 /// Max number of commands per frame
 static const Int MAX_COMMANDS = 256;
 
+extern Int MIN_LOGIC_FRAMES;
 extern Int MAX_FRAMES_AHEAD;
 extern Int MIN_RUNAHEAD;
 
@@ -61,7 +62,8 @@ static const Int MAX_PACKET_SIZE = 476;
  * to each player every frame
  */
 #define MAX_MESSAGE_LEN 1024
-#define MAX_MESSAGES 128
+// TheSuperHackers @bugfix Mauller 08/02/2026 Double send and receive buffer sizes to alleviate the occurance of disconnection issues in retail and non retail code.
+#define MAX_MESSAGES 256
 static const Int numCommandsPerCommandPacket = (MAX_MESSAGE_LEN - sizeof(UnsignedInt) - sizeof(UnsignedShort))/sizeof(GameMessage);
 #pragma pack(push, 1)
 struct CommandPacket
