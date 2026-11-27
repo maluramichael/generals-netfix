@@ -11100,10 +11100,9 @@ void Pathfinder::crc( Xfer *xfer )
 
 	xfer->xferInt(&m_numWallPieces);
 	CRCDEBUG_LOG(("m_numWallPieces: %8.8X\n", ((XferCRC *)xfer)->getCRC()));
-	for (Int i=0; i<MAX_WALL_PIECES; ++i)
-	{
-		xfer->xferObjectID(&m_wallPieces[MAX_WALL_PIECES]);
-	}
+	// TheSuperHackers @fix The original code effectively accessed m_numWallPieces 128 times,
+	// because it used &m_wallPieces[MAX_WALL_PIECES] which is out-of-bounds and points to m_numWallPieces.
+	xfer->xferUser(m_wallPieces, sizeof(m_wallPieces));
 	CRCDEBUG_LOG(("m_wallPieces: %8.8X\n", ((XferCRC *)xfer)->getCRC()));
 
 	xfer->xferReal(&m_wallHeight);
