@@ -59,7 +59,7 @@ const Int MAX_GLOBAL_LIGHTS	= 3;
 /** Global data container class
   *	Defines all global game data used by the system
 	* @todo Change this entire system. Otherwise this will end up a huge class containing tons of variables,
-	* and will cause re-compilation dependancies throughout the codebase. 
+	* and will cause re-compilation dependencies throughout the code base. 
   * OOPS -- TOO LATE! :) */
 //-------------------------------------------------------------------------------------------------
 class GlobalData : public SubsystemInterface
@@ -519,6 +519,8 @@ public:
   const AsciiString &getPath_UserData() const { return m_userDataDir; }
 
 private:
+
+	static UnsignedInt generateExeCRC();
 
 	static const FieldParse s_GlobalDataFieldParseTable[];
 
