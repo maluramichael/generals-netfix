@@ -89,6 +89,7 @@ void Keyboard::createStreamMessages( void )
 		}
 
 		// next key please
+		key->setUsed();
 		key++;
 
 	}  // end while
@@ -764,6 +765,20 @@ KeyboardIO *Keyboard::getFirstKey( void )
 {
 	return &m_keys[ 0 ];	
 }  // end getFirstKey
+
+//-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+KeyboardIO *Keyboard::findKey( UnsignedByte key, KeyboardIO::StatusType status )
+{
+	for (KeyboardIO *io = getFirstKey(); io->key != KEY_NONE; ++io)
+	{
+		if (io->key == key && io->status == status)
+		{
+			return io;
+		}
+	}
+	return NULL;
+}
 
 //-------------------------------------------------------------------------------------------------
 /** return the key status for the specified key */

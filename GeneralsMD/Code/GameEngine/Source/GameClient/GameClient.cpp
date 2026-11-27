@@ -526,6 +526,8 @@ void GameClient::update( void )
 			TheDisplay->playLogoMovie("EALogoMovie640", 5000, 3000);
 		TheWritableGlobalData->m_playIntro = FALSE;
 		TheWritableGlobalData->m_afterIntro = TRUE;
+		// generals-netfix: ESC also skips the EA logo movie (as in TheSuperHackers #2879)
+		TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
 		playSizzle = TRUE;
 	}
 

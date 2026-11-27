@@ -79,6 +79,8 @@ struct KeyboardIO
 	UnsignedShort	state;									// KEY_STATE_* in KeyDefs.h
 	UnsignedInt		sequence;								// sequence info from DirectX used for order
 
+	void setUsed() { status = STATUS_USED; }
+
 };  // end KeyboardIO
 
 // class Keyboard =============================================================
@@ -114,6 +116,7 @@ public:
 	// access methods for key data
 	void resetKeys( void );												///< reset the state of the keys
 	KeyboardIO *getFirstKey( void );							///< get first key ready for processing
+	KeyboardIO *findKey( UnsignedByte key, KeyboardIO::StatusType status );
 	void setKeyStatusData( UnsignedByte key, 
 												 KeyboardIO::StatusType data );   ///< set key status
 	WideChar translateKey( WideChar keyCode );		///< translte key code to printable UNICODE char

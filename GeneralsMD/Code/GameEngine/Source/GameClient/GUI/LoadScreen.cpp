@@ -71,6 +71,7 @@
 #include "GameClient/GameText.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GameWindowTransitions.h"
+#include "GameClient/Keyboard.h"
 #include "GameClient/LoadScreen.h"
 #include "GameClient/MapUtil.h"
 #include "GameClient/Mouse.h"
@@ -534,6 +535,18 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 		Int shiftedPercent = -FRAME_FUDGE_ADD + 1;
 		while (m_videoStream->frameIndex() < m_videoStream->frameCount() - 1 )
 		{
+			// TheSuperHackers @feature User can now skip video by pressing ESC
+			if (TheKeyboard)
+			{
+				TheKeyboard->update();
+				KeyboardIO *io = TheKeyboard->findKey(KEY_ESC, KeyboardIO::STATUS_UNUSED);
+				if (io && BitIsSet(io->state, KEY_STATE_DOWN))
+				{
+					io->setUsed();
+					break;
+				}
+			}
+
 			TheGameEngine->serviceWindowsOS();
 
 			if(!m_videoStream->isFrameReady())
@@ -1050,6 +1063,18 @@ void ChallengeLoadScreen::init( GameInfo *game )
 		Int shiftedPercent = -FRAME_FUDGE_ADD + 1;
 		while (m_videoStream->frameIndex() < m_videoStream->frameCount() - 1 )
 		{
+			// TheSuperHackers @feature User can now skip video by pressing ESC
+			if (TheKeyboard)
+			{
+				TheKeyboard->update();
+				KeyboardIO *io = TheKeyboard->findKey(KEY_ESC, KeyboardIO::STATUS_UNUSED);
+				if (io && BitIsSet(io->state, KEY_STATE_DOWN))
+				{
+					io->setUsed();
+					break;
+				}
+			}
+
 			TheGameEngine->serviceWindowsOS();
 
 			if(!m_videoStream->isFrameReady())
