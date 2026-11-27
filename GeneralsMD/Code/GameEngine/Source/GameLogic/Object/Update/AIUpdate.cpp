@@ -5014,12 +5014,14 @@ void AIUpdateInterface::crc( Xfer *x )
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
 	* Version Info:
-	* 1: Initial version */
+	* 1: Initial version
+	* 5: TheSuperHackers @fix Fixed out-of-bounds xfer of m_guardTargetType
+	*/
 // ------------------------------------------------------------------------------------------------
 void AIUpdateInterface::xfer( Xfer *xfer )
 {
   // version
-  const XferVersion currentVersion = 4;
+  const XferVersion currentVersion = 5;
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
  
@@ -5036,8 +5038,22 @@ void AIUpdateInterface::xfer( Xfer *xfer )
 	xfer->xferObjectID(&m_currentVictimID);	
 	xfer->xferReal(&m_desiredSpeed);
 	xfer->xferUser(&m_lastCommandSource, sizeof(m_lastCommandSource));
-	xfer->xferUser(&m_guardTargetType[0], sizeof(m_guardTargetType));
-	xfer->xferUser(&m_guardTargetType[1], sizeof(m_guardTargetType));
+
+	if (version < 5)
+	{
+		// TheSuperHackers @fix The original code effectively accessed m_guardTargetType[0], [1], [1], [2].
+		// The last one is out-of-bounds and points to m_locationToGuard.
+		static_assert(sizeof(m_locationToGuard) >= sizeof(m_guardTargetType[2]), "Xfer size must not exceed variable size");
+
+		xfer->xferUser(&m_guardTargetType[0], sizeof(m_guardTargetType));
+		xfer->xferUser(&m_guardTargetType[1], sizeof(m_guardTargetType[1]));
+		xfer->xferUser(&m_locationToGuard, sizeof(m_guardTargetType[2]));
+	}
+	else
+	{
+		xfer->xferUser(m_guardTargetType, sizeof(m_guardTargetType));
+	}
+
 	xfer->xferCoord3D(&m_locationToGuard);
 
 	xfer->xferObjectID(&m_objectToGuard);
