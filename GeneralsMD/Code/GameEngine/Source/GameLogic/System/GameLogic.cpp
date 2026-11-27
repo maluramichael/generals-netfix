@@ -42,6 +42,7 @@
 #include "Common/LatchRestore.h"
 #include "Common/MapObject.h"
 #include "Common/MultiplayerSettings.h"
+#include "Common/OSDisplay.h"
 #include "Common/PerfTimer.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -4268,6 +4269,27 @@ void GameLogic::setGamePaused( Bool paused, Bool pauseMusic )
 		}
 #endif
 	}
+
+	updateDisplayBusyState();
+}
+
+// ------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
+void GameLogic::updateDisplayBusyState()
+{
+	const Bool busySystem = m_gameMode != GAME_NONE && m_gameMode != GAME_SHELL && !isGamePaused();
+	const Bool busyDisplay = busySystem;
+
+	OSDisplaySetBusyState(busyDisplay, busySystem);
+}
+
+// ------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
+void GameLogic::setGameMode( Int mode )
+{
+	m_gameMode = mode;
+
+	updateDisplayBusyState();
 }
 
 // ------------------------------------------------------------------------------------------------
