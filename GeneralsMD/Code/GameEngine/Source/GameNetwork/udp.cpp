@@ -182,6 +182,8 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
   {
     status=GetStatus();
     //CERR("Bind failure (" << status << ") IP " << IP << " PORT " << Port )
+    closesocket(fd);
+    fd=0;
     return(status);
   }
 
