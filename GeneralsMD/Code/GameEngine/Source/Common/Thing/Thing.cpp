@@ -294,10 +294,14 @@ Real Thing::calculateHeightAboveTerrain() const
 }
 
 //-------------------------------------------------------------------------------------------------
+Int Thing::s_clientReadScope = 0;
+
 Real Thing::getHeightAboveTerrain() const
 {
 	if (!(m_cacheFlags & VALID_ALTITUDE_TERRAIN))
 	{
+		if (s_clientReadScope > 0 && AsObject(this) != NULL)
+			return calculateHeightAboveTerrain();
 		m_cachedAltitudeAboveTerrain = calculateHeightAboveTerrain();
 		m_cacheFlags |= VALID_ALTITUDE_TERRAIN;
 	}
@@ -312,6 +316,8 @@ Real Thing::getHeightAboveTerrainOrWater() const
 	{
 		const Coord3D* pos = getPosition();
 		Real waterZ;
+		if (s_clientReadScope > 0 && AsObject(this) != NULL)
+			return TheTerrainLogic->isUnderwater(pos->x, pos->y, &waterZ) ? pos->z - waterZ : getHeightAboveTerrain();
 		if (TheTerrainLogic->isUnderwater(pos->x, pos->y, &waterZ)) 
 		{
 			m_cachedAltitudeAboveTerrainOrWater = pos->z - waterZ;

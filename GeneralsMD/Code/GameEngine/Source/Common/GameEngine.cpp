@@ -832,6 +832,7 @@ void GameEngine::update( void )
 			
 			// VERIFY CRC needs to be in this code block.  Please to not pull TheGameLogic->update() inside this block.
 			VERIFY_CRC
+			ThingClientReadScope clientReadScope;	// generals-netfix: client code, see Thing::s_clientReadScope
 
 			TheRadar->UPDATE();
 
@@ -854,7 +855,7 @@ void GameEngine::update( void )
 		{
 			if (TheNetwork->isFrameDataReady())
 			{
-				TheGameClient->step();
+				{ ThingClientReadScope clientReadScope; TheGameClient->step(); }
 				TheGameLogic->UPDATE();
 			}
 		}
@@ -875,7 +876,7 @@ void GameEngine::update( void )
 				if (useFastMode || !enabled || logicTimeScaleFps >= maxRenderFps)
 				{
 					// Logic time scale is uncapped or larger equal Render FPS. Update straight away.
-					TheGameClient->step();
+					{ ThingClientReadScope clientReadScope; TheGameClient->step(); }
 					TheGameLogic->UPDATE();
 				}
 				else
@@ -888,7 +889,7 @@ void GameEngine::update( void )
 					if (m_logicTimeAccumulator >= targetFrameTime)
 					{
 						m_logicTimeAccumulator -= targetFrameTime;
-						TheGameClient->step();
+						{ ThingClientReadScope clientReadScope; TheGameClient->step(); }
 						TheGameLogic->UPDATE();
 					}
 				}

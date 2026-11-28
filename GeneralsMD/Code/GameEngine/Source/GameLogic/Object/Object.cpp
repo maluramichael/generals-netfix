@@ -1770,6 +1770,7 @@ void Object::reactToTransformChange(const Matrix3D* oldMtx, const Coord3D* oldPo
 	}
 	if (m_drawable)
 	{
+		ThingClientReadScope clientReadScope;	// generals-netfix: draw modules react here, see Thing::s_clientReadScope
   	m_drawable->setTransformMatrix( this->getTransformMatrix() );
 	}
 

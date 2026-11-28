@@ -96,6 +96,12 @@ class Thing : public MemoryPoolObject
 
 public:
 
+	// generals-netfix (idea from CnCGeneralsZH-Reforged b7dc6f2c): while this is above 0, client code is
+	// running (drawing, input, effects). Altitude reads of Objects then compute their value without filling the
+	// cache. A cache filled on one machine only made later logic reads differ by rounding, because
+	// setPositionZ shifts a filled cache by the delta instead of recomputing it. See ThingClientReadScope.
+	static Int s_clientReadScope;
+
 	Thing( const ThingTemplate *thingTemplate );
 
 	/** 
@@ -194,6 +200,13 @@ private:
 //-----------------------------------------------------------------------------
 //           Externals                                                     
 //-----------------------------------------------------------------------------
+
+/// Marks a block of client code for Thing::s_clientReadScope.
+struct ThingClientReadScope
+{
+	ThingClientReadScope() { ++Thing::s_clientReadScope; }
+	~ThingClientReadScope() { --Thing::s_clientReadScope; }
+};
 
 #endif // $label
 
