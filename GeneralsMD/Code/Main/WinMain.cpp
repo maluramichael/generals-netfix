@@ -899,6 +899,12 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		_set_se_translator( DumpExceptionInfo ); // Hook that allows stack trace.
 		SetUnhandledExceptionFilter( UnHandledExceptionFilter );
+#if defined(_M_IX86) && (!defined(_M_IX86_FP) || _M_IX86_FP == 0)
+		// generals-netfix: In the /arch:IA32 build (build-xp.ps1 -Arch IA32) the CRT would still pick
+		// SSE2 math functions on CPUs that have SSE2 and x87 ones on CPUs without. Their results differ,
+		// which would desync a LAN game between such machines. Always use the x87 functions (#2813).
+		_set_SSE2_enable(0);
+#endif
 		//
 		// there is something about checkin in and out the .dsp and .dsw files 
 		// that blows the working directory information away on each of the 

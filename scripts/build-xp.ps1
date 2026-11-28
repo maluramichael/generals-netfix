@@ -4,9 +4,12 @@
 # The UCRT comes from Windows SDK 10.0.10240, the oldest UCRT release.
 # Needs VS 2022 with the components "MSVC v141 x86/x64 (14.16)", "C++ Windows XP Support for VS 2017 (v141)" and MFC for v141.
 # -Config RelWithDebInfo builds into build/xp-relwithdebinfo with a PDB for crash analysis.
-param([string]$Config = "Release")
+# -Arch IA32 builds x87 code without SSE2 (Pentium III, Athlon XP) into <dir>-ia32. It is a different EXE:
+# everyone in a LAN game needs the same one, and the SSE2 build stays the default.
+param([string]$Config = "Release", [ValidateSet("SSE2", "IA32")][string]$Arch = "SSE2")
 $ErrorActionPreference = "Stop"
 $dir = if ($Config -eq "Release") { "build/xp" } else { "build/xp-$($Config.ToLower())" }
+if ($Arch -eq "IA32") { $dir = "$dir-ia32" }
 $root = Split-Path -Parent $PSScriptRoot
 $vs = "C:\Program Files\Microsoft Visual Studio\2022\Community"
 
@@ -23,8 +26,9 @@ function Swap-Sdk([string]$list, [string[]]$add) {
 $env:INCLUDE = Swap-Sdk $env:INCLUDE @("$kits\Include\$ucrt\ucrt", "$sdk71\Include")
 $env:LIB = Swap-Sdk $env:LIB @("$kits\Lib\$ucrt\ucrt\x86", "$sdk71\Lib")
 $env:LIBPATH = Swap-Sdk $env:LIBPATH @()
-$env:CFLAGS = "/D_USING_V110_SDK71_"
-$env:CXXFLAGS = "/D_USING_V110_SDK71_"
+$archFlag = if ($Arch -eq "IA32") { " /arch:IA32" } else { "" }
+$env:CFLAGS = "/D_USING_V110_SDK71_$archFlag"
+$env:CXXFLAGS = "/D_USING_V110_SDK71_$archFlag"
 $env:RCFLAGS = "/D_USING_V110_SDK71_"
 
 Set-Location $root
