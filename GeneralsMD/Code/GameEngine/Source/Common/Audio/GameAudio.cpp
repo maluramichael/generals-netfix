@@ -59,6 +59,7 @@
 #include "Common/OSDisplay.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
+#include "Common/Recorder.h"
 #include "Common/Registry.h"
 #include "Common/EnglishAudioLength.h"
 #include "Common/UserPreferences.h"
@@ -970,7 +971,12 @@ Real AudioManager::getAudioLengthMS( const AudioEventRTS *event )
 // ponytail: non-localized files are still measured by Miles, a client without audio device gets 0 for them.
 Real AudioManager::getLogicalFileLengthMS( AsciiString strToLoad ) const
 {
-	if (!strToLoad.isEmpty() && TheGameLogic != NULL && TheGameLogic->getGameMode() != GAME_SINGLE_PLAYER) {
+	// A replay plays back with GAME_REPLAY, so use the mode the game was recorded in.
+	Int gameMode = TheGameLogic != NULL ? TheGameLogic->getGameMode() : GAME_NONE;
+	if (gameMode == GAME_REPLAY && TheRecorder != NULL) {
+		gameMode = TheRecorder->getGameMode();
+	}
+	if (!strToLoad.isEmpty() && gameMode != GAME_NONE && gameMode != GAME_SINGLE_PLAYER) {
 		const Int ms = LookupEnglishAudioLengthMS(strToLoad.str(), GetRegistryLanguage().str());
 		if (ms >= 0) {
 			return INT_TO_REAL(ms);
