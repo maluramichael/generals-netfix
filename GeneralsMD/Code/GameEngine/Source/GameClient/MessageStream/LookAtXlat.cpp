@@ -29,6 +29,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
 #include "Common/GameType.h"
+#include "Common/GameEngine.h"
 #include "Common/MessageStream.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -356,15 +357,19 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 
 			Int spin = msg->getArgument( 1 )->integer;
 
+			// TheSuperHackers @tweak The camera zoom is now decoupled from the render update.
+			const Real fpsRatio = (Real)BaseFps / TheGameEngine->getUpdateFps();
+			const Real zoomHeight = (Real)View::ZoomHeightPerSecond * fpsRatio;
+
 			if (spin > 0)
 			{
 				for ( ; spin > 0; spin--)
-					TheTacticalView->zoomIn();
+					TheTacticalView->zoom( -zoomHeight );
 			}
 			else
 			{
 				for ( ;spin < 0; spin++ )
-					TheTacticalView->zoomOut();
+					TheTacticalView->zoom( +zoomHeight );
 			}
 		}
 		
@@ -393,6 +398,10 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 			// scroll the view
 			if (m_isScrolling)
 			{
+				// TheSuperHackers @bugfix The camera scrolling is now decoupled from the render update.
+				// MSG_FRAME_TICK comes once per render frame, the offset is scaled to the historic 30 fps.
+				const Real fpsRatio = (Real)BaseFps / TheGameEngine->getUpdateFps();
+
 				switch (m_scrollType)
 				{
 				case SCROLL_RMB:
@@ -422,25 +431,27 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 						// Add in the window scroll amount as the minimum.
 						offset.x += TheGlobalData->m_horizontalScrollSpeedFactor * vec.x * sqr(TheGlobalData->m_keyboardScrollFactor);
 						offset.y += TheGlobalData->m_verticalScrollSpeedFactor * vec.y * sqr(TheGlobalData->m_keyboardScrollFactor);
+						offset.x *= fpsRatio;
+						offset.y *= fpsRatio;
 					}
 					break;
 				case SCROLL_KEY:
 					{
 						if (scrollDir[DIR_UP])
 						{
-							offset.y -= TheGlobalData->m_verticalScrollSpeedFactor * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
+							offset.y -= TheGlobalData->m_verticalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
 						if (scrollDir[DIR_DOWN])
 						{
-							offset.y += TheGlobalData->m_verticalScrollSpeedFactor * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
+							offset.y += TheGlobalData->m_verticalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
 						if (scrollDir[DIR_LEFT])
 						{
-							offset.x -= TheGlobalData->m_horizontalScrollSpeedFactor * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
+							offset.x -= TheGlobalData->m_horizontalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
 						if (scrollDir[DIR_RIGHT])
 						{
-							offset.x += TheGlobalData->m_horizontalScrollSpeedFactor * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
+							offset.x += TheGlobalData->m_horizontalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
 					}
 					break;
@@ -450,19 +461,19 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 						UnsignedInt width  = TheDisplay->getWidth();
 						if (m_currentPos.y < edgeScrollSize)
 						{
-							offset.y -= TheGlobalData->m_verticalScrollSpeedFactor * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
+							offset.y -= TheGlobalData->m_verticalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
 						if (m_currentPos.y >= height-edgeScrollSize)
 						{
-							offset.y += TheGlobalData->m_verticalScrollSpeedFactor * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
+							offset.y += TheGlobalData->m_verticalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
 						if (m_currentPos.x < edgeScrollSize)
 						{
-							offset.x -= TheGlobalData->m_horizontalScrollSpeedFactor * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
+							offset.x -= TheGlobalData->m_horizontalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
 						if (m_currentPos.x >= width-edgeScrollSize)
 						{
-							offset.x += TheGlobalData->m_horizontalScrollSpeedFactor * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
+							offset.x += TheGlobalData->m_horizontalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
 					}
 					break;
