@@ -921,7 +921,9 @@ GlobalData::GlobalData()
 	m_saveCameraInReplay = FALSE;
 	m_useCameraInReplay = FALSE;
 
-	// netfix: Off by default, enabled with SystemTimeFontSize and GameTimeFontSize in Options.ini.
+	// netfix: Off by default, enabled with the *FontSize entries in Options.ini.
+	m_networkLatencyFontSize = 0;
+	m_renderFpsFontSize = 0;
 	m_systemTimeFontSize = 0;
 	m_gameTimeFontSize = 0;
 
@@ -1190,6 +1192,8 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_saveCameraInReplay = optionPref.saveCameraInReplays();
 	TheWritableGlobalData->m_useCameraInReplay = optionPref.useCameraInReplays();
 
+	TheWritableGlobalData->m_networkLatencyFontSize = optionPref.getNetworkLatencyFontSize();
+	TheWritableGlobalData->m_renderFpsFontSize = optionPref.getRenderFpsFontSize();
 	TheWritableGlobalData->m_systemTimeFontSize = optionPref.getSystemTimeFontSize();
 	TheWritableGlobalData->m_gameTimeFontSize = optionPref.getGameTimeFontSize();
 	
