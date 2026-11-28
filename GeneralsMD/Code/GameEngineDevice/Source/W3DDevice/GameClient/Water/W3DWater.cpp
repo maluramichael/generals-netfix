@@ -49,6 +49,7 @@
 #include "mesh.h"
 #include "matinfo.h"
 
+#include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
@@ -991,7 +992,7 @@ void WaterRenderObjClass::load(void)
 Int WaterRenderObjClass::init(Real waterLevel, Real dx, Real dy, SceneClass *parentScene, WaterType type)
 {
 
-	m_iBumpFrame=0;
+	m_fBumpFrame=0;
 	m_fBumpScale=SEA_BUMP_SCALE;
 
 	m_dx=dx;
@@ -1222,21 +1223,32 @@ void WaterRenderObjClass::update( void )
 	if( TheGameLogic )
 		currLogicFrame = TheGameLogic->getFrame();
 
-	// we only process things if the logic frame has changed
+	// TheSuperHackers @tweak The water movement time step is now decoupled from the render update.
+	// netfix: Pause and frozen time stop the water as before, upstream does that only with #1528.
+	Bool pause = TheScriptEngine->isTimeFrozenScript() || TheScriptEngine->isTimeFrozenDebug();
+	if (TheGameLogic && TheGameLogic->isGamePaused())
+		pause = true;
+	const Real timeScale = pause ? 0.0f : TheGameEngine->getActualLogicTimeScaleOverFpsRatio();
+	{
+		const Real MagicOffset = 0.0125f * 33 / 5000; ///< the work of top Munkees; do not question it
+
+		m_riverVOrigin += 0.002f * timeScale;
+		m_riverXOffset += (Real)(MagicOffset * timeScale);
+		m_riverYOffset += (Real)(2 * MagicOffset * timeScale);
+
+		// This moves offsets towards zero when smaller -1.0 or larger 1.0
+		m_riverXOffset -= (Int)m_riverXOffset;
+		m_riverYOffset -= (Int)m_riverYOffset;
+
+		m_fBumpFrame += timeScale;
+		if (m_fBumpFrame >= NUM_BUMP_FRAMES)
+			m_fBumpFrame = 0.0f;
+	}
+
+	// netfix: The vertex animated water grid stays on the logic frame. Upstream moves it
+	// to the render update without scaling, it would then settle faster at high fps.
 	if( lastLogicFrame != currLogicFrame )
 	{
-
-		m_riverVOrigin += 0.002f;
-		m_riverXOffset += (Real)(0.0125*33/5000);
-		m_riverYOffset += (Real)(2*0.0125*33/5000);
-		if (m_riverXOffset > 1) m_riverXOffset -= 1;
-		if (m_riverYOffset > 1) m_riverYOffset -= 1;
-		if (m_riverXOffset < -1) m_riverXOffset += 1;
-		if (m_riverYOffset < -1) m_riverYOffset += 1;
- 		m_iBumpFrame++;
-		if (m_iBumpFrame >= NUM_BUMP_FRAMES) {
-			m_iBumpFrame = 0;
-		}
 
 		// for vertex animated water we need to update the vector field
 		if( m_doWaterGrid && m_meshInMotion == TRUE )
@@ -1852,7 +1864,7 @@ void WaterRenderObjClass::drawSea(RenderInfoClass & rinfo)
 	m_pDev->SetTextureStageState(1, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
 	m_pDev->SetTextureStageState(1, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
 
-	m_pDev->SetTexture( 0, m_pBumpTexture[m_iBumpFrame]);
+	m_pDev->SetTexture( 0, m_pBumpTexture[(Int)m_fBumpFrame]);
 #ifdef MIPMAP_BUMP_TEXTURE
 	m_pDev->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTEXF_POINT );
 	m_pDev->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTEXF_LINEAR );
