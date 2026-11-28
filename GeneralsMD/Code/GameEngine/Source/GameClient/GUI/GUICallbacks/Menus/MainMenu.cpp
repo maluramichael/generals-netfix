@@ -609,6 +609,12 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	
 	showSelectiveButtons(SHOW_NONE);
 	initNetfixLabel();
+
+	// generals-netfix: The Steam data (PatchWindow.big) adds ButtonCustomMission for its Workshop update.
+	// This code has no handler and the Steam strings have no text for it, so it showed "MISSING: GUI:CustomMission".
+	GameWindow *buttonCustomMission = TheWindowManager->winGetWindowFromId( parentMainMenu, TheNameKeyGenerator->nameToKey( AsciiString("MainMenu.wnd:ButtonCustomMission") ) );
+	if (buttonCustomMission)
+		buttonCustomMission->winHide(TRUE);
 	// Set up the version number
 #if defined _DEBUG || defined _INTERNAL || defined _PROFILE
 	WinInstanceData instData;
