@@ -1502,7 +1502,11 @@ void ConnectionManager::updateRunAhead(Int oldRunAhead, Int frameRate, Bool didS
 			} else {
 				//DEBUG_LOG(("ConnectionManager::updateRunAhead - average latency = %f, average fps = %d, didSelfSlug = false\n", m_frameMetrics.getAverageLatency(), m_frameMetrics.getAverageFPS()));
 			}
-			m_connections[m_packetRouterSlot]->sendNetCommandMsg(msg, 1 << m_packetRouterSlot);
+			// generals-netfix: the only use of m_connections[m_packetRouterSlot] here without a bounds test,
+			// and it runs twice a second (idea from CnCGeneralsZH-Reforged e42f7c2a).
+			if ((m_packetRouterSlot >= 0) && (m_packetRouterSlot < MAX_SLOTS) && (m_connections[m_packetRouterSlot] != NULL)) {
+				m_connections[m_packetRouterSlot]->sendNetCommandMsg(msg, 1 << m_packetRouterSlot);
+			}
 			msg->detach();
 		}
 		lasttimesent = curTime;
@@ -1889,12 +1893,7 @@ PlayerLeaveCode ConnectionManager::disconnectPlayer(Int slot) {
 //	}
 
 	if (slot == m_packetRouterSlot) {
-		Int index = 0;
-		while ((index < (MAX_SLOTS-1)) && (m_packetRouterFallback[index] != m_packetRouterSlot)) {
-			++index;
-		}
-		++index;
-		m_packetRouterSlot = m_packetRouterFallback[index];
+		m_packetRouterSlot = getNextPacketRouterSlot(m_packetRouterSlot);
 		DEBUG_LOG(("Packet router left.  New packet router is slot %d\n", m_packetRouterSlot));
 		retval = PLAYERLEAVECODE_PACKETROUTER;
 	}
@@ -2523,7 +2522,11 @@ void ConnectionManager::sendFrameDataToPlayer(UnsignedInt playerID, UnsignedInt 
 }
 
 void ConnectionManager::sendSingleFrameToPlayer(UnsignedInt playerID, UnsignedInt frame) {
-	if ((TheGameLogic->getFrame() - FRAMES_TO_KEEP) > frame) {
+	// generals-netfix (idea from CnCGeneralsZH-Reforged 5c3ad2b4): EA subtracted FRAMES_TO_KEEP from the
+	// unsigned frame counter, which wrapped during the first FRAMES_TO_KEEP frames, so every resend request
+	// at the start of a game was refused as "too far in the past". Compare the signed age instead.
+	const Int frameAge = (Int)(TheGameLogic->getFrame() - frame);
+	if (frameAge > FRAMES_TO_KEEP) {
 		DEBUG_LOG(("ConnectionManager::sendSingleFrameToPlayer - player %d requested frame %d when we are on frame %d, this is too far in the past.\n", playerID, frame, TheGameLogic->getFrame()));
 		return;
 	}
@@ -2557,13 +2560,23 @@ void ConnectionManager::sendSingleFrameToPlayer(UnsignedInt playerID, UnsignedIn
 	}
 }
 
-UnsignedInt ConnectionManager::getNextPacketRouterSlot(UnsignedInt playerID) {
+// generals-netfix (idea from CnCGeneralsZH-Reforged e42f7c2a): EA walked the fallback plan with
+// while (index < MAX_SLOTS-1 && fallback[index] != slot) ++index; ++index; which reads fallback[MAX_SLOTS]
+// (the member after the array) when the slot is last in a full plan or not in it at all.
+// Returns MAX_SLOTS when nobody follows, the value DisconnectManager already checks for.
+static UnsignedInt nextPacketRouterSlot( const UnsignedInt *fallback, UnsignedInt currentSlot )
+{
 	Int index = 0;
-	while ((index < (MAX_SLOTS-1)) && (m_packetRouterFallback[index] != playerID)) {
+	while ((index < MAX_SLOTS) && (fallback[index] != currentSlot))
 		++index;
-	}
 	++index;
-	return m_packetRouterFallback[index];
+	if (index >= MAX_SLOTS || fallback[index] >= MAX_SLOTS)
+		return MAX_SLOTS;
+	return fallback[index];
+}
+
+UnsignedInt ConnectionManager::getNextPacketRouterSlot(UnsignedInt playerID) {
+	return nextPacketRouterSlot(m_packetRouterFallback, playerID);
 }
 
 void ConnectionManager::requestFrameDataResend(Int playerID, UnsignedInt frame) {
