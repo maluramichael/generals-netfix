@@ -1233,7 +1233,7 @@ WindowMsgHandledType LanGameOptionsMenuSystem( GameWindow *window, UnsignedInt m
 					txtInput.trim();
 					// Echo the user's input to the chat window
 					if (!txtInput.isEmpty())
-						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_EMOTE);
+						TheLAN->RequestPlayerChat(txtInput);
 				} //if ( controlID == buttonEmote )
 				else if ( controlID == buttonSelectMapID )
 				{
@@ -1369,7 +1369,7 @@ WindowMsgHandledType LanGameOptionsMenuSystem( GameWindow *window, UnsignedInt m
 					txtInput.trim();
 					// Echo the user's input to the chat window
 					if (!txtInput.isEmpty())
-						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_NORMAL);
+						TheLAN->RequestPlayerChat(txtInput);
 
 				}// if ( controlID == textEntryChatID )
 				break;

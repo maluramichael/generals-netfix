@@ -804,7 +804,7 @@ WindowMsgHandledType LanLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					// Echo the user's input to the chat window
 					if (!txtInput.isEmpty()) {
 //						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_EMOTE);
-						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_NORMAL);
+						TheLAN->RequestPlayerChat(txtInput);
 					}
 				} //if ( controlID == buttonEmote )
 				else if (controlID == buttonDirectConnectID)
@@ -886,7 +886,7 @@ WindowMsgHandledType LanLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 
 					// Echo the user's input to the chat window
 					if (!txtInput.isEmpty())
-						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_NORMAL);
+						TheLAN->RequestPlayerChat(txtInput);
 
 				}// if ( controlID == textEntryChatID )
 				/*

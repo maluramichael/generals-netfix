@@ -86,6 +86,7 @@ public:
 	virtual void RequestAccept( void ) = 0;																						///< Indicate we're OK with the game options
 	virtual void RequestHasMap( void ) = 0;																						///< Send our map status
 	virtual void RequestChat( UnicodeString message, ChatType format ) = 0;						///< Send a chat message
+	virtual void RequestPlayerChat( UnicodeString message ) = 0;							///< Send a chat message typed by the player, "/me " makes it an emote
 	virtual void RequestGameStart( void ) = 0;																				///< Tell everyone the game is starting
 	virtual void RequestGameStartTimer( Int seconds ) = 0;
 	virtual void RequestGameOptions( AsciiString gameOptions, Bool isPublic, UnsignedInt ip = 0 ) = 0;		///< Change the game options
@@ -170,6 +171,7 @@ public:
 	virtual void RequestAccept( void );																						///< Indicate we're OK with the game options
 	virtual void RequestHasMap( void );																						///< Send our map status
 	virtual void RequestChat( UnicodeString message, ChatType format );						///< Send a chat message
+	virtual void RequestPlayerChat( UnicodeString message );							///< Send a chat message typed by the player, "/me " makes it an emote
 	virtual void RequestGameStart( void );																				///< Tell everyone the game is starting
 	virtual void RequestGameStartTimer( Int seconds );
 	virtual void RequestGameOptions( AsciiString gameOptions, Bool isPublic, UnsignedInt ip = 0 );		///< Change the game options

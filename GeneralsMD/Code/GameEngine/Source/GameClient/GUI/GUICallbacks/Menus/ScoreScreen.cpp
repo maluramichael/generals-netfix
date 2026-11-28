@@ -588,7 +588,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 				// Echo the user's input to the chat window
 				if (!txtInput.isEmpty())
 					if(TheLAN)
-						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_EMOTE);
+						TheLAN->RequestPlayerChat(txtInput);
 					//add the gamespy chat request here
 			} //if ( controlID == buttonEmote )
 			for(Int i = 0; i < MAX_SLOTS; ++i)
@@ -645,7 +645,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 				// Echo the user's input to the chat window
 				if (!txtInput.isEmpty())
 					if(TheLAN)
-						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_NORMAL);
+						TheLAN->RequestPlayerChat(txtInput);
 					//add the gamespy chat request here
 
 			}// if ( controlID == textEntryChatID )
