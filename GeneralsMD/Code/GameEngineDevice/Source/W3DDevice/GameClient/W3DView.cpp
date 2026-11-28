@@ -1379,22 +1379,20 @@ void W3DView::update(void)
 			// if scrolling, only adjust if we're too close or too far
 			if (m_scrollAmount.length() < m_scrollAmountCutoff || (m_currentHeightAboveGround < m_minHeightAboveGround) || (TheGlobalData->m_enforceMaxCameraHeight && m_currentHeightAboveGround > m_maxHeightAboveGround))
 			{
-				Real zoomAdj = (desiredZoom - m_zoom)*TheGlobalData->m_cameraAdjustSpeed;
-				if (fabs(zoomAdj) >= 0.0001)	// only do positive
+				Real zoomAdj = (desiredZoom - m_zoom) * TheGlobalData->m_cameraAdjustSpeed * TheGameEngine->getActualLogicTimeScaleOverFpsRatio();
+				if (fabs(zoomAdj) >= 0.0001f)	// only do positive
 				{
 					m_zoom += zoomAdj;
 					recalcCamera = true;
 				}
 			}
 		}
-		else
+		else if (!didScriptedMovement)
 		{
 			// we're not scrolling; settle toward desired height above ground
-			Real zoomAdj = (m_zoom - desiredZoom)*TheGlobalData->m_cameraAdjustSpeed;
-			Real zoomAdjAbs = fabs(zoomAdj);
-			if (zoomAdjAbs >= 0.0001 && !didScriptedMovement)
+			Real zoomAdj = (m_zoom - desiredZoom) * TheGlobalData->m_cameraAdjustSpeed * TheGameEngine->getActualLogicTimeScaleOverFpsRatio();
+			if (fabs(zoomAdj) >= 0.0001f)
 			{
-				//DEBUG_LOG(("W3DView::update() - m_zoom=%g, desiredHeight=%g\n", m_zoom, desiredZoom));
 				m_zoom -= zoomAdj;
 				recalcCamera = true;
 			}
