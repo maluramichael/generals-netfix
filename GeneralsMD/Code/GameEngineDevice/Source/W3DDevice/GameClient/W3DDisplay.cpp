@@ -1798,19 +1798,6 @@ AGAIN:
 
 
 	do {
-		
-		{
-			if(TheGlobalData->m_loadScreenRender != TRUE)
-			{
-			
-				// limit the framerate
-				while(TheGlobalData->m_useFpsLimit && (now - prevTime) < minTime-1)
-				{
-					now = timeGetTime();
-				}
-				prevTime = now;
-			}
-		}
 
 		// update all views of the world - recomputes data which will affect drawing
 		if (DX8Wrapper::_Get_D3D_Device8() && (DX8Wrapper::_Get_D3D_Device8()->TestCooperativeLevel()) == D3D_OK)

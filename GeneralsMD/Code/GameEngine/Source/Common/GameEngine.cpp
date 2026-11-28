@@ -44,6 +44,7 @@
 #include "Common/ThingFactory.h"
 #include "Common/File.h"
 #include "Common/FileSystem.h"
+#include "Common/FrameRateLimit.h"
 #include "Common/ArchiveFileSystem.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/CDManager.h"
@@ -786,8 +787,8 @@ extern HWND ApplicationHWnd;
  */
 void GameEngine::execute( void )
 {
-	
-	DWORD prevTime = timeGetTime();
+	FrameRateLimit* frameRateLimit = new FrameRateLimit();
+
 #if defined(_DEBUG) || defined(_INTERNAL)
 	DWORD startTime = timeGetTime() / 1000;
 #endif
@@ -869,27 +870,20 @@ void GameEngine::execute( void )
 
 
 		#if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
-          if ( ! TheGlobalData->m_TiVOFastMode )
-		#else	//always allow this cheatkey if we're in a replaygame.
-		  if ( ! (TheGlobalData->m_TiVOFastMode && TheGameLogic->isInReplayGame()))
+					if ( ! TheGlobalData->m_TiVOFastMode )
+		#else	//always allow this cheat key if we're in a replay game.
+					if ( ! (TheGlobalData->m_TiVOFastMode && TheGameLogic->isInReplayGame()))
 		#endif
-          {
-            // limit the framerate
-					  DWORD now = timeGetTime();
-					  DWORD limit = (1000.0f/m_maxFPS)-1;
-					  while (TheGlobalData->m_useFpsLimit && (now - prevTime) < limit) 
-					  {
-						  ::Sleep(0);
-						  now = timeGetTime();
-					  }
-					  //Int slept = now - prevTime;
-					  //DEBUG_LOG(("delayed %d\n",slept));
+					{
+						// TheSuperHackers @bugfix xezon 05/08/2025 Re-implements the frame rate limiter
+						// with higher resolution counters to cap the frame rate more accurately to the desired limit.
+						if (TheGlobalData->m_useFpsLimit)
+						{
+							frameRateLimit->wait(m_maxFPS);
+						}
+					}
 
-					  prevTime = now;
-
-          }        
-        
-        }
+				}
 			}
 
 		}	// perfgather for execute_loop
@@ -905,6 +899,7 @@ void GameEngine::execute( void )
 
 	}
 
+	delete frameRateLimit;
 }
 
 /** -----------------------------------------------------------------------------------------------
