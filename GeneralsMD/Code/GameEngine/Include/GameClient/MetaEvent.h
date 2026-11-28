@@ -154,6 +154,11 @@ enum MappableKeyType
 	MK_INS					= KEY_INS,
 	MK_DEL					= KEY_DEL,
 	MK_KPSLASH			= KEY_KPSLASH,
+	MK_KPDEL				= KEY_KPDEL,
+	MK_KPSTAR				= KEY_KPSTAR,
+	MK_KPMINUS			= KEY_KPMINUS,
+	MK_KPPLUS				= KEY_KPPLUS,
+	MK_KPENTER			= KEY_KPENTER,
 	MK_NONE					= KEY_NONE
 
 };	
@@ -245,6 +250,11 @@ static const LookupListRec KeyNames[] =
 	{ "KEY_INS", MK_INS },
 	{ "KEY_DEL", MK_DEL },
 	{ "KEY_KPSLASH", MK_KPSLASH },
+	{ "KEY_KPDEL", MK_KPDEL },
+	{ "KEY_KPSTAR", MK_KPSTAR },
+	{ "KEY_KPMINUS", MK_KPMINUS },
+	{ "KEY_KPPLUS", MK_KPPLUS },
+	{ "KEY_KPENTER", MK_KPENTER },
 	{ "KEY_NONE", MK_NONE },
 	{ NULL, 0	} // keep this last!
 };
@@ -301,7 +311,9 @@ enum CommandUsableInType
 	COMMANDUSABLE_NONE				= 0,
 
 	COMMANDUSABLE_SHELL				= (1 << 0),
-	COMMANDUSABLE_GAME				= (1 << 1)
+	COMMANDUSABLE_GAME				= (1 << 1),
+
+	COMMANDUSABLE_EVERYWHERE = COMMANDUSABLE_SHELL | COMMANDUSABLE_GAME,
 };
 
 static const char* TheCommandUsableInNames[] =
@@ -371,6 +383,7 @@ public:
 	void update() { }
 
 	static void parseMetaMap(INI* ini);
+	static void generateMetaMap();
 	const MetaMapRec *getFirstMetaMapRec() const { return m_metaMaps; }
 };
 

@@ -32,6 +32,7 @@
 
 #include "Common/AudioAffect.h"
 #include "Common/ActionManager.h"
+#include "Common/FrameRateLimit.h"
 #include "Common/GameAudio.h"
 #include "Common/GameEngine.h"
 #include "Common/GameType.h"
@@ -133,6 +134,87 @@ void printObjects(Object *obj, void *userData)
 }
 
 #endif
+
+
+// TheSuperHackers @feature The messages use fixed English text because the original
+// string tables know no labels for them (FETCH_OR_SUBSTITUTE does not exist in this code base).
+static bool changeMaxRenderFps(FpsValueChange change)
+{
+	UnsignedInt maxRenderFps = TheGameEngine->getFramesPerSecondLimit();
+	maxRenderFps = RenderFpsPreset::changeFpsValue(maxRenderFps, change);
+
+	TheGameEngine->setFramesPerSecondLimit(maxRenderFps);
+	TheWritableGlobalData->m_useFpsLimit = (maxRenderFps != RenderFpsPreset::UncappedFpsValue);
+
+	if (TheWritableGlobalData->m_useFpsLimit)
+	{
+		TheInGameUI->message(UnicodeString(L"Max Render FPS is %u"), maxRenderFps);
+	}
+	else
+	{
+		TheInGameUI->message(UnicodeString(L"Max Render FPS is uncapped"));
+	}
+
+	return true;
+}
+
+static bool changeLogicTimeScale(FpsValueChange change)
+{
+	if (TheNetwork != NULL)
+		return false;
+
+	const UnsignedInt maxRenderFps = TheGameEngine->getFramesPerSecondLimit();
+	UnsignedInt maxRenderRemainder = LogicTimeScaleFpsPreset::StepFpsValue;
+	maxRenderRemainder -= maxRenderFps % LogicTimeScaleFpsPreset::StepFpsValue;
+	maxRenderRemainder %= LogicTimeScaleFpsPreset::StepFpsValue;
+
+	UnsignedInt logicTimeScaleFps = TheGameEngine->getLogicTimeScaleFps();
+	// Set the value to the max render fps value plus a bit when time scale is
+	// disabled. This ensures that the time scale does not re-enable with a
+	// 'surprise' value.
+	if (!TheGameEngine->isLogicTimeScaleEnabled())
+	{
+		logicTimeScaleFps = maxRenderFps + maxRenderRemainder;
+	}
+	// Ceil the value at the max render fps value plus a bit so that the next fps
+	// value decrease would undercut the max render fps at the correct step value.
+	// Example: render fps 72 -> logic value ceiled to 75 -> decreased to 70.
+	logicTimeScaleFps = min(logicTimeScaleFps, maxRenderFps + maxRenderRemainder);
+	logicTimeScaleFps = LogicTimeScaleFpsPreset::changeFpsValue(logicTimeScaleFps, change);
+
+	// Set value before potentially disabling it.
+	if (TheGameEngine->isLogicTimeScaleEnabled())
+	{
+		TheGameEngine->setLogicTimeScaleFps(logicTimeScaleFps);
+	}
+
+	TheGameEngine->enableLogicTimeScale(logicTimeScaleFps < maxRenderFps);
+
+	// Set value after potentially enabling it.
+	if (TheGameEngine->isLogicTimeScaleEnabled())
+	{
+		TheGameEngine->setLogicTimeScaleFps(logicTimeScaleFps);
+	}
+
+	logicTimeScaleFps = TheGameEngine->getLogicTimeScaleFps();
+	const UnsignedInt actualLogicTimeScaleFps = TheGameEngine->getActualLogicTimeScaleFps();
+	const Real actualLogicTimeScaleRatio = TheGameEngine->getActualLogicTimeScaleRatio();
+
+	if (TheGameEngine->isLogicTimeScaleEnabled())
+	{
+		TheInGameUI->message(UnicodeString(L"Logic Time Scale FPS is %u (actual %u, ratio %.02f)"),
+			logicTimeScaleFps, actualLogicTimeScaleFps, actualLogicTimeScaleRatio);
+	}
+	else
+	{
+		TheInGameUI->message(UnicodeString(L"Logic Time Scale FPS is uncapped (actual %u, ratio %.02f)"),
+			actualLogicTimeScaleFps, actualLogicTimeScaleRatio);
+	}
+
+	return true;
+}
+
+
 static Bool isSystemMessage( const GameMessage *msg );
 
 enum{ DROPPED_MAX_PARTICLE_COUNT = 1000};
@@ -3117,6 +3199,46 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			ToggleQuitMenu();
 			disp = DESTROY_MESSAGE;
 			break;
+
+		//-----------------------------------------------------------------------------------------
+		case GameMessage::MSG_META_INCREASE_MAX_RENDER_FPS:
+		{
+			if (changeMaxRenderFps(FpsValueChange_Increase))
+			{
+				disp = DESTROY_MESSAGE;
+			}
+			break;
+		}
+
+		//-----------------------------------------------------------------------------------------
+		case GameMessage::MSG_META_DECREASE_MAX_RENDER_FPS:
+		{
+			if (changeMaxRenderFps(FpsValueChange_Decrease))
+			{
+				disp = DESTROY_MESSAGE;
+			}
+			break;
+		}
+
+		//-----------------------------------------------------------------------------------------
+		case GameMessage::MSG_META_INCREASE_LOGIC_TIME_SCALE:
+		{
+			if (changeLogicTimeScale(FpsValueChange_Increase))
+			{
+				disp = DESTROY_MESSAGE;
+			}
+			break;
+		}
+
+		//-----------------------------------------------------------------------------------------
+		case GameMessage::MSG_META_DECREASE_LOGIC_TIME_SCALE:
+		{
+			if (changeLogicTimeScale(FpsValueChange_Decrease))
+			{
+				disp = DESTROY_MESSAGE;
+			}
+			break;
+		}
 
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_TOGGLE_LOWER_DETAILS:

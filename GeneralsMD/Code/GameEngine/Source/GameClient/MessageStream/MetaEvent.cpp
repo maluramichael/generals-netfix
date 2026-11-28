@@ -155,6 +155,10 @@ static const LookupListRec GameMessageMetaTypeNames[] =
 	{ "PLACE_BEACON",															GameMessage::MSG_META_PLACE_BEACON },
 	{ "DELETE_BEACON",														GameMessage::MSG_META_REMOVE_BEACON },
 	{ "OPTIONS",																	GameMessage::MSG_META_OPTIONS },
+	{ "INCREASE_MAX_RENDER_FPS",									GameMessage::MSG_META_INCREASE_MAX_RENDER_FPS },
+	{ "DECREASE_MAX_RENDER_FPS",									GameMessage::MSG_META_DECREASE_MAX_RENDER_FPS },
+	{ "INCREASE_LOGIC_TIME_SCALE",								GameMessage::MSG_META_INCREASE_LOGIC_TIME_SCALE },
+	{ "DECREASE_LOGIC_TIME_SCALE",								GameMessage::MSG_META_DECREASE_LOGIC_TIME_SCALE },
 	{ "TOGGLE_LOWER_DETAILS",											GameMessage::MSG_META_TOGGLE_LOWER_DETAILS },
 	{ "TOGGLE_CONTROL_BAR",												GameMessage::MSG_META_TOGGLE_CONTROL_BAR },
 	{ "BEGIN_PATH_BUILD",													GameMessage::MSG_META_BEGIN_PATH_BUILD },
@@ -716,6 +720,57 @@ MetaMapRec *MetaMap::getMetaMapRec(GameMessage::Type t)
 		throw INI_INVALID_DATA;
 
 	ini->initFromINI(map, TheMetaMapFieldParseTable);
+}
+
+//-------------------------------------------------------------------------------------------------
+/*static */ void MetaMap::generateMetaMap()
+{
+	// TheSuperHackers @feature Default key mappings for commands that the original
+	// CommandMap.ini does not know. A mapping from the INI files takes precedence.
+	{
+		// Is useful for Generals and Zero Hour.
+		MetaMapRec *map = TheMetaMap->getMetaMapRec(GameMessage::MSG_META_INCREASE_MAX_RENDER_FPS);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_KPPLUS;
+			map->m_transition = DOWN;
+			map->m_modState = CTRL;
+			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
+		}
+	}
+	{
+		// Is useful for Generals and Zero Hour.
+		MetaMapRec *map = TheMetaMap->getMetaMapRec(GameMessage::MSG_META_DECREASE_MAX_RENDER_FPS);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_KPMINUS;
+			map->m_transition = DOWN;
+			map->m_modState = CTRL;
+			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
+		}
+	}
+	{
+		// Is useful for Generals and Zero Hour.
+		MetaMapRec *map = TheMetaMap->getMetaMapRec(GameMessage::MSG_META_INCREASE_LOGIC_TIME_SCALE);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_KPPLUS;
+			map->m_transition = DOWN;
+			map->m_modState = SHIFT_CTRL;
+			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
+		}
+	}
+	{
+		// Is useful for Generals and Zero Hour.
+		MetaMapRec *map = TheMetaMap->getMetaMapRec(GameMessage::MSG_META_DECREASE_LOGIC_TIME_SCALE);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_KPMINUS;
+			map->m_transition = DOWN;
+			map->m_modState = SHIFT_CTRL;
+			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
+		}
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
