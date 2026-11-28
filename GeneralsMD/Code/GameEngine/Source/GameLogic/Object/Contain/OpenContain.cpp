@@ -1178,6 +1178,10 @@ void OpenContain::monitorConditionChanges( void )
 	if( draw )
 	{
 		currCondition = draw->getModelConditionFlags();
+		// generals-netfix (idea from CnCGeneralsZH-Reforged 1b8279c6): GarrisonContain sets GARRISONED per viewer,
+		// a stealth garrison shows it only to the owner and to players who detected it. The redeploy below moves
+		// the occupants, so reacting to that bit moved them on some machines only and the game desynced.
+		currCondition.set( MODELCONDITION_GARRISONED, 0 );
 		if(currCondition != m_conditionState )
 			stateChanged = TRUE;
 	}

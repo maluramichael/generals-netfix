@@ -179,7 +179,7 @@ void StructureToppleUpdate::beginStructureTopple(const DamageInfo *damageInfo)
 		m_delayBurstLocation.z = TheTerrainLogic->getGroundHeight(m_delayBurstLocation.x, m_delayBurstLocation.y);
 
 		doToppleStartFX(building, damageInfo);
-		m_nextBurstFrame = now + GameClientRandomValue(d->m_minToppleBurstDelay, d->m_maxToppleBurstDelay);
+		m_nextBurstFrame = now + GameLogicRandomValue(d->m_minToppleBurstDelay, d->m_maxToppleBurstDelay);
 
 		m_toppleState = TOPPLESTATE_WAITINGFORTOPPLESTART;
 
@@ -228,8 +228,8 @@ UpdateSleepTime StructureToppleUpdate::update( void )
 		UnsignedInt now = TheGameLogic->getFrame();
 		if (now >= m_nextBurstFrame) {
 			doToppleDelayBurstFX();
-			// This uses a game client random value because the delay bursts are purely visual and aural effects.
-			m_nextBurstFrame = now + GameClientRandomValue(d->m_minToppleBurstDelay, d->m_maxToppleBurstDelay);
+			// generals-netfix (idea from CnCGeneralsZH-Reforged 2bb66e8e): logic random, the burst also runs the STPHASE_DELAY OCLs, which create logic objects.
+			m_nextBurstFrame = now + GameLogicRandomValue(d->m_minToppleBurstDelay, d->m_maxToppleBurstDelay);
 		}
 		if (now >= m_toppleFrame) {
 			m_toppleState = TOPPLESTATE_TOPPLING;
@@ -276,8 +276,8 @@ UpdateSleepTime StructureToppleUpdate::update( void )
 
 		if (now >= m_nextBurstFrame) {
 			doToppleDelayBurstFX();
-			// This uses a game client random value because the delay bursts are purely visual and aural effects.
-			m_nextBurstFrame = now + GameClientRandomValue(d->m_minToppleBurstDelay, d->m_maxToppleBurstDelay);
+			// generals-netfix (idea from CnCGeneralsZH-Reforged 2bb66e8e): logic random, the burst also runs the STPHASE_DELAY OCLs, which create logic objects.
+			m_nextBurstFrame = now + GameLogicRandomValue(d->m_minToppleBurstDelay, d->m_maxToppleBurstDelay);
 		}
 
 		Object *building = getObject();
