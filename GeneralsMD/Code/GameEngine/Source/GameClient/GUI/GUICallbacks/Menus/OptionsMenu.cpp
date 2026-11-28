@@ -36,6 +36,7 @@
 #include "Common/AudioSettings.h"
 #include "Common/GameAudio.h"
 #include "Common/GameEngine.h"
+#include "Common/Recorder.h"
 #include "Common/UserPreferences.h"
 #include "Common/GameLOD.h"
 #include "Common/Registry.h"
@@ -317,6 +318,18 @@ void OptionPreferences::setOnlineIPAddress( UnsignedInt IP )
 	AsciiString tmp;
 	tmp.format("%d.%d.%d.%d", ((IP & 0xff000000) >> 24), ((IP & 0xff0000) >> 16), ((IP & 0xff00) >> 8), (IP & 0xff));
 	(*this)["GameSpyIPAddress"] = tmp;
+}
+
+Bool OptionPreferences::getArchiveReplaysEnabled() const
+{
+	OptionPreferences::const_iterator it = find("ArchiveReplays");
+	if (it == end())
+		return FALSE;
+
+	if (stricmp(it->second.str(), "yes") == 0) {
+		return TRUE;
+	}
+	return FALSE;
 }
 
 Bool OptionPreferences::getAlternateMouseModeEnabled(void)
@@ -1288,6 +1301,13 @@ static void saveOptions( void )
 
 	TheWritableGlobalData->m_doubleClickAttackMove = GadgetCheckBoxIsChecked( checkDoubleClickAttackMove );
 	(*pref)["UseDoubleClickAttackMove"] = TheWritableGlobalData->m_doubleClickAttackMove ? AsciiString("yes") : AsciiString("no");
+
+	// TheSuperHackers @feature Stubbjax 17/10/2025 ArchiveReplays=yes in Options.ini, no checkbox (would need new .wnd and strings).
+	{
+		Bool enabled = pref->getArchiveReplaysEnabled();
+		(*pref)["ArchiveReplays"] = enabled ? "yes" : "no";
+		TheRecorder->setArchiveEnabled(enabled);
+	}
 
 	//-------------------------------------------------------------------------------------------------
 	// scroll speed val

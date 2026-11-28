@@ -108,7 +108,8 @@ public:
 	RecorderModeType getMode();												///< Returns the current operating mode.
 	void initControls();															///< Show or Hide the Replay controls
 
-	AsciiString getReplayDir();												///< Returns the directory that holds the replay files.
+	AsciiString getReplayDir();
+	AsciiString getReplayArchiveDir();								///< Returns the directory that holds the archived replay files.												///< Returns the directory that holds the replay files.
 	AsciiString getReplayExtention();									///< Returns the file extention for replay files.
 	AsciiString getLastReplayFileName();							///< Returns the filename used for the default replay.
 
@@ -122,10 +123,12 @@ public:
 	void logCRCMismatch( void );
 	void cleanUpReplayFile( void );										///< after a crash, send replay/debug info to a central repository
 
+	void setArchiveEnabled(Bool enable) { m_archiveReplays = enable; } ///< Enable or disable replay archiving.
 	void stopRecording();															///< Stop recording and close m_file.
 protected:
 	void startRecording(GameDifficulty diff, Int originalGameMode, Int rankPoints, Int maxFPS);					///< Start recording to m_file.
-	void writeToFile(GameMessage *msg);								///< Write this GameMessage to m_file.
+	void writeToFile(GameMessage *msg);
+	void archiveReplay(AsciiString fileName);					///< Copy the specified replay file to the archive directory.								///< Write this GameMessage to m_file.
 
 	void logGameStart(AsciiString options);
 	void logGameEnd( void );
@@ -149,6 +152,7 @@ protected:
 	Bool m_wasDesync;
 
 	Bool m_doingAnalysis;
+	Bool m_archiveReplays;														///< if true, each replay is archived to the replay archive folder after recording
 
 	Int m_originalGameMode; // valid in replays
 
