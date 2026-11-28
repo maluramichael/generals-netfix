@@ -59,6 +59,8 @@
 #include "Common/OSDisplay.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
+#include "Common/Registry.h"
+#include "Common/EnglishAudioLength.h"
 #include "Common/UserPreferences.h"
 
 #include "GameClient/ControlBar.h"
@@ -952,11 +954,29 @@ Real AudioManager::getAudioLengthMS( const AudioEventRTS *event )
 
 	AudioEventRTS tmpEvent = *event;
 
+	// generals-netfix: Script conditions ("has completed playing") count logic frames from this length,
+	// so it must be the same on every machine. Pick random samples with the logic seed instead of the audio seed.
+	tmpEvent.setIsLogicalAudio(TRUE);
 	tmpEvent.generateFilename();
 	tmpEvent.generatePlayInfo();
-	return getFileLengthMS(tmpEvent.getAttackFilename()) + 
-				 getFileLengthMS(tmpEvent.getFilename()) + 
-				 getFileLengthMS(tmpEvent.getDecayFilename());
+	return getLogicalFileLengthMS(tmpEvent.getAttackFilename()) +
+				 getLogicalFileLengthMS(tmpEvent.getFilename()) +
+				 getLogicalFileLengthMS(tmpEvent.getDecayFilename());
+}
+
+//-------------------------------------------------------------------------------------------------
+// generals-netfix: Outside the campaign, localized files get their English length (see EnglishAudioLength.h),
+// so "has completed playing" fires on the same logic frame in mixed-language games.
+// ponytail: non-localized files are still measured by Miles, a client without audio device gets 0 for them.
+Real AudioManager::getLogicalFileLengthMS( AsciiString strToLoad ) const
+{
+	if (!strToLoad.isEmpty() && TheGameLogic != NULL && TheGameLogic->getGameMode() != GAME_SINGLE_PLAYER) {
+		const Int ms = LookupEnglishAudioLengthMS(strToLoad.str(), GetRegistryLanguage().str());
+		if (ms >= 0) {
+			return INT_TO_REAL(ms);
+		}
+	}
+	return getFileLengthMS(strToLoad);
 }
 
 //-------------------------------------------------------------------------------------------------
