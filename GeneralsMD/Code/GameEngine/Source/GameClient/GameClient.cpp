@@ -777,6 +777,11 @@ void GameClient::update( void )
 	}
 }  // end update
 
+void GameClient::step()
+{
+	TheDisplay->step();
+}
+
 /** -----------------------------------------------------------------------------------------------
  * Call the given callback function for each object contained within the given region.
  */
